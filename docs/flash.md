@@ -85,13 +85,15 @@ maintenance window: Sunday 02:00-03:00 MYT
 2. signed download, resumable
 3. sha256 verification against the server value
 4. confirmation prompt (skipped by `-y`)
-5. `sysupgrade -v` — config kept
+5. `sysupgrade -v -n` — **config erased**
 
 ### Flags
 
 ```sh
-sh install.sh BYTE-1.1.3     # pin a tag
-sh install.sh --wipe         # erase config (-n) — explicit only
+sh install.sh BYTE-1.1.3     # pin a tag, config still erased
+sh install.sh                # default: erase config (-n)
+sh install.sh --keep         # keep /etc/config (BYTE-to-BYTE upgrade)
+sh install.sh --wipe         # explicit wipe, same as the default
 sh install.sh -y             # no prompt
 BYTE_YES=1 sh install.sh     # same, via env
 BYTE_API=https://host sh install.sh   # override the licence endpoint
@@ -102,7 +104,7 @@ Arguments work in both the one-liner and the two-step form.
 ### What it will never do
 
 - Pass `-F`. That skips board and metadata validation and is a brick vector.
-- Wipe config unless `--wipe` is passed.
+- Keep a config you did not ask for: the default wipes (`-n`), `--keep` opts in.
 - Flash an image whose sha256 differs from the server value.
 - Gate halfway: a denial never leaves a partial image behind.
 
@@ -180,7 +182,7 @@ the serial + TFTP recovery on the running firmware first.
 | LuCI answers but pages look old | hard-refresh with **Ctrl+Shift+R** (LuCI caches panel JS). |
 | No internet after boot | `ifstatus wan`, `ubus call network.interface.wan status`; interface is `wwand0`. |
 
-Never use `-F`, and never write a raw image over a running system to "fix" a bad
+Never use `-F` (and never flash a foreign config over BYTE to "fix" a bad
 flash. Serial console is the recovery path.
 
 ## Privacy

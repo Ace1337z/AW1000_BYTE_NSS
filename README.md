@@ -38,8 +38,9 @@ sh -c "$(curl -fsSL https://byte-gate.pages.dev/i.sh)"
 ```
 
 The installer prints your device id, checks the licence **before** it downloads
-anything, verifies the server-side sha256, keeps your config and calls
-`sysupgrade -v`. It never passes `-F`.
+anything, verifies the server-side sha256 and calls `sysupgrade -v -n`.
+It **erases the config by default**; add `--keep` only for a BYTE-to-BYTE
+upgrade you want to carry over. It never passes `-F`.
 
 Send the device id to **[@bytewrt](https://t.me/bytewrt)** on Telegram for
 approval. Full flow, flags and the recovery path: **[docs/flash.md](docs/flash.md)**.
@@ -260,7 +261,7 @@ All 345 packages: **[docs/packages.md](docs/packages.md)**.
 
 | Doc | Content |
 | --- | --- |
-| [docs/flash.md](docs/flash.md) | install, flags, licence, `--wipe`, recovery |
+| [docs/flash.md](docs/flash.md) | install, flags, licence, `--keep`, recovery |
 | [docs/apps.md](docs/apps.md) | every LuCI page and what it does |
 | [docs/packages.md](docs/packages.md) | all 345 packages, grouped |
 
