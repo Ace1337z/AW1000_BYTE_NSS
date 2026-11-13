@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="400" viewBox="0 0 1100 400" role="img" aria-label="BYTE datapath: 5G modem through NSS cores to LAN and Wi-Fi">
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d0e10"/>
+      <stop offset="1" stop-color="#12161c"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#4cc2ff"/>
+    </marker>
+  </defs>
+
+  <rect width="1100" height="400" rx="18" fill="url(#bg2)"/>
+  <rect x="1" y="1" width="1098" height="398" rx="17" fill="none" stroke="#242a33"/>
+
+  <text x="40" y="52" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="24" font-weight="700" fill="#f4f7fb">Where the packets go</text>
+  <text x="40" y="78" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="14" fill="#8b98a9">Established flows are forwarded by the NSS cores, not by the CPU</text>
+
+  <g font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif">
+    <rect x="40" y="120" width="200" height="120" rx="14" fill="#151a21" stroke="#2b3340"/>
+    <text x="64" y="152" font-size="12" fill="#7c8a9c" letter-spacing="1.5">5G MODEM</text>
+    <text x="64" y="182" font-size="17" font-weight="600" fill="#e8eef7">Quectel QMI</text>
+    <text x="64" y="206" font-size="12" fill="#8b98a9">rmnet raw-IP netdev</text>
+    <text x="64" y="224" font-size="12" fill="#8b98a9">AT owner: wwand only</text>
+
+    <rect x="300" y="120" width="200" height="120" rx="14" fill="#151a21" stroke="#2b3340"/>
+    <text x="324" y="152" font-size="12" fill="#7c8a9c" letter-spacing="1.5">DRIVER</text>
+    <text x="324" y="182" font-size="17" font-weight="600" fill="#e8eef7">qca-nss-drv</text>
+    <text x="324" y="206" font-size="12" fill="#8b98a9">binds rmnet_rx nodes</text>
+    <text x="324" y="224" font-size="12" fill="#8b98a9">wwand-datapath-rmnet_nss</text>
+
+    <rect x="560" y="108" width="240" height="144" rx="14" fill="#151a21" stroke="#4cc2ff" stroke-width="1.4"/>
+    <text x="584" y="140" font-size="12" fill="#4cc2ff" letter-spacing="1.5">NSS CORES</text>
+    <text x="584" y="170" font-size="17" font-weight="600" fill="#e8eef7">EDMA + ECM</text>
+    <text x="584" y="194" font-size="12" fill="#8b98a9">routing, NAT, PPPoE offload</text>
+    <text x="584" y="212" font-size="12" fill="#8b98a9">flow offload on, packet</text>
+    <text x="584" y="230" font-size="12" fill="#8b98a9">steering left to the NSS</text>
+
+    <rect x="860" y="120" width="200" height="120" rx="14" fill="#151a21" stroke="#2b3340"/>
+    <text x="884" y="152" font-size="12" fill="#7c8a9c" letter-spacing="1.5">OUT</text>
+    <text x="884" y="182" font-size="17" font-weight="600" fill="#e8eef7">LAN / Wi-Fi</text>
+    <text x="884" y="206" font-size="12" fill="#8b98a9">ath11k · DSA switch</text>
+    <text x="884" y="224" font-size="12" fill="#8b98a9">MSS clamped to 1420</text>
+
+    <line x1="240" y1="180" x2="292" y2="180" stroke="#4cc2ff" stroke-width="2" marker-end="url(#arrow)"/>
+    <line x1="500" y1="180" x2="552" y2="180" stroke="#4cc2ff" stroke-width="2" marker-end="url(#arrow)"/>
+    <line x1="800" y1="180" x2="852" y2="180" stroke="#4cc2ff" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <rect x="40" y="288" width="1020" height="76" rx="12" fill="#11161d" stroke="#242a33"/>
+    <text x="64" y="316" font-size="12" fill="#7c8a9c" letter-spacing="1.5">WHY IT MATTERS</text>
+    <text x="64" y="342" font-size="14" fill="#d6dee9">The CPU stays available for LuCI, PassWall2, AdGuard Home and the RJ11 phone daemon while traffic is forwarded in hardware.</text>
+  </g>
+</svg>

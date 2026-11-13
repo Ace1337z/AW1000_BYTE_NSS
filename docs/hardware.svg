@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="540" viewBox="0 0 1100 540" role="img" aria-label="BYTE 1.1.3 hardware and software stack for the Arcadyan AW1000">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d0e10"/>
+      <stop offset="1" stop-color="#12161c"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#4cc2ff"/>
+      <stop offset="1" stop-color="#a78bfa"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1100" height="540" rx="18" fill="url(#bg)"/>
+  <rect x="1" y="1" width="1098" height="538" rx="17" fill="none" stroke="#242a33"/>
+
+  <rect x="40" y="34" width="6" height="64" rx="3" fill="url(#accent)"/>
+  <text x="66" y="60" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="30" font-weight="700" fill="#f4f7fb">BYTE 1.1.3</text>
+  <text x="66" y="88" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="15" fill="#8b98a9">Arcadyan AW1000 · 5G CPE · Qualcomm IPQ8072A · NSS-EDMA tree</text>
+
+  <g font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif">
+    <g>
+      <rect x="40" y="128" width="320" height="104" rx="12" fill="#151a21" stroke="#242a33"/>
+      <text x="62" y="156" font-size="12" fill="#7c8a9c" letter-spacing="1.6">SOC</text>
+      <text x="62" y="184" font-size="19" font-weight="600" fill="#e8eef7">IPQ8072A</text>
+      <text x="62" y="208" font-size="13" fill="#8b98a9">4 × Cortex-A53 · NSS 12.5 cores</text>
+    </g>
+    <g>
+      <rect x="380" y="128" width="320" height="104" rx="12" fill="#151a21" stroke="#242a33"/>
+      <text x="402" y="156" font-size="12" fill="#7c8a9c" letter-spacing="1.6">MEMORY</text>
+      <text x="402" y="184" font-size="19" font-weight="600" fill="#e8eef7">1 GB DDR</text>
+      <text x="402" y="208" font-size="13" fill="#8b98a9">zram swap · 580 MB overlay free</text>
+    </g>
+    <g>
+      <rect x="720" y="128" width="340" height="104" rx="12" fill="#151a21" stroke="#242a33"/>
+      <text x="742" y="156" font-size="12" fill="#7c8a9c" letter-spacing="1.6">RADIOS</text>
+      <text x="742" y="184" font-size="19" font-weight="600" fill="#e8eef7">Wi-Fi 6 · ath11k</text>
+      <text x="742" y="208" font-size="13" fill="#8b98a9">2.4 GHz + 5 GHz 80 MHz · wpad-openssl</text>
+    </g>
+
+    <g>
+      <rect x="40" y="248" width="320" height="104" rx="12" fill="#151a21" stroke="#242a33"/>
+      <text x="62" y="276" font-size="12" fill="#7c8a9c" letter-spacing="1.6">MODEM</text>
+      <text x="62" y="304" font-size="19" font-weight="600" fill="#e8eef7">Quectel 5G sub-6</text>
+      <text x="62" y="328" font-size="13" fill="#8b98a9">QMI · wwand owns the AT port</text>
+    </g>
+    <g>
+      <rect x="380" y="248" width="320" height="104" rx="12" fill="#151a21" stroke="#242a33"/>
+      <text x="402" y="276" font-size="12" fill="#7c8a9c" letter-spacing="1.6">OFFLOAD</text>
+      <text x="402" y="304" font-size="19" font-weight="600" fill="#e8eef7">NSS + ECM</text>
+      <text x="402" y="328" font-size="13" fill="#8b98a9">qca-nss-drv · EDMA · rmnet_nss</text>
+    </g>
+    <g>
+      <rect x="720" y="248" width="340" height="104" rx="12" fill="#151a21" stroke="#242a33"/>
+      <text x="742" y="276" font-size="12" fill="#7c8a9c" letter-spacing="1.6">KERNEL</text>
+      <text x="742" y="304" font-size="19" font-weight="600" fill="#e8eef7">Linux 6.18.55</text>
+      <text x="742" y="328" font-size="13" fill="#8b98a9">squashfs sysupgrade · keeps config</text>
+    </g>
+
+    <g>
+      <rect x="40" y="368" width="320" height="104" rx="12" fill="#151a21" stroke="#242a33"/>
+      <text x="62" y="396" font-size="12" fill="#7c8a9c" letter-spacing="1.6">UPLINK</text>
+      <text x="62" y="424" font-size="19" font-weight="600" fill="#e8eef7">MTU 1420</text>
+      <text x="62" y="448" font-size="13" fill="#8b98a9">pinned, MSS clamped on forward</text>
+    </g>
+    <g>
+      <rect x="380" y="368" width="320" height="104" rx="12" fill="#151a21" stroke="#242a33"/>
+      <text x="402" y="396" font-size="12" fill="#7c8a9c" letter-spacing="1.6">WEB UI</text>
+      <text x="402" y="424" font-size="19" font-weight="600" fill="#e8eef7">Vantage theme</text>
+      <text x="402" y="448" font-size="13" fill="#8b98a9">dark + light · HTTP only, no cert warning</text>
+    </g>
+    <g>
+      <rect x="720" y="368" width="340" height="104" rx="12" fill="#151a21" stroke="#242a33"/>
+      <text x="742" y="396" font-size="12" fill="#7c8a9c" letter-spacing="1.6">BUILD</text>
+      <text x="742" y="424" font-size="19" font-weight="600" fill="#e8eef7">345 packages</text>
+      <text x="742" y="448" font-size="13" fill="#8b98a9">reproducible from CI · pinned feeds</text>
+    </g>
+  </g>
+
+  <rect x="40" y="492" width="1020" height="1" fill="#232a33"/>
+  <text x="40" y="518" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="13" fill="#7c8a9c">arcadyan,aw1000 · qualcommax/ipq807x · kernel 6.18.55 · NSS firmware 12.5 (1 GB profile)</text>
+  <text x="1060" y="518" text-anchor="end" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="13" fill="#4cc2ff">BYTE</text>
+</svg>
