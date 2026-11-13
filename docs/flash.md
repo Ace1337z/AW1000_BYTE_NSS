@@ -12,7 +12,7 @@ Read [Recovery](#recovery) before you run it. A flash you cannot undo is a brick
 ## 1. Get the device id
 
 ```sh
-sh -c "$(curl -fsSL https://byte-gate.pages.dev/i.sh)" --id
+sh -c "$(curl -fsSL https://byte-gate.pages.dev/i.sh)" _ --id
 ```
 
 or, with the script already on the box:
@@ -21,6 +21,9 @@ or, with the script already on the box:
 curl -fsSL https://byte-gate.pages.dev/i.sh -o /tmp/install.sh
 sh /tmp/install.sh --id
 ```
+
+The `_` is the placeholder for `$0`; without it the flag would be swallowed as
+the shell's own name and the installer would see no arguments.
 
 It prints 24 hex characters and nothing else on stdout. That id is
 `sha256(eth0 + br-lan + phy0-ap0 + phy1-ap0 MAC)`, truncated. It contains no
