@@ -139,6 +139,14 @@ The QR points at `http://192.168.1.1:8080/linphone.xml`, served by a separate
 uhttpd instance whose document root is only `/www/awvoice-provision`. Never the
 LuCI root, and plain HTTP, so no certificate warning.
 
+<p align="center">
+  <img src="awvoice-linphone-qr.svg" width="180" alt="Linphone QR code">
+</p>
+
+The SIP tab's **Show a Linphone QR code** button writes a fresh file with the
+box's current address and shows the code, so a LAN renumbering does not leave you
+with a dead QR.
+
 > Default SIP password is shared and published. Anyone on the LAN who knows it
 > can call through the SIM. Rotate it before using the router with people you do
 > not trust, and never forward `5060` or `40000–40031` from the WAN.

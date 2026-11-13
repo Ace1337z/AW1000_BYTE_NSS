@@ -21,7 +21,7 @@ configured, not just installed.
 | Kernel | Linux **6.18.55** |
 | NSS | firmware **12.5**, 1 GB memory profile, `qca-nss-drv` + ECM |
 | Wi-Fi | ath11k, Wi-Fi 6, 2.4 GHz + 5 GHz (160 MHz capable) |
-| Image | squashfs **sysupgrade only** — 37,171,460 bytes |
+| Image | squashfs **sysupgrade only** — **37.2 MB** (35.4 MiB), one file |
 | Packages | **345** installed |
 | Theme | Vantage (dark + light), Bootstrap fallback |
 | Build | pinned OpenWrt `nss-edma` tree, reproducible from CI |
@@ -118,6 +118,59 @@ one-click AdGuard Home password change, IPv6 toggle and system state.
 
 ![BYTE panel](docs/screenshots/byte-panel.png)
 
+### Services → AWvoice (RJ11) — SIP tab
+
+The SIP side: line mode, the installed SIP service state, the LAN account and a
+**Show a Linphone QR code** button. The stored password is never printed — the
+page writes a new hash and shows a fresh password once.
+
+![AWvoice SIP tab](docs/screenshots/awvoice-sip.png)
+
+---
+
+## Phone (RJ11) and Linphone
+
+The RJ11 socket is a real phone line, not a sticker. `awvoice-phoned` talks to
+the line chip directly — no vendor DSP blob ships — and owns the modem's voice
+AT port (`/dev/ttyUSB2`). QModem is pinned to `/dev/ttyUSB3`, so voice and data
+never fight over an AT port.
+
+The same SIM number is reachable from a softphone on your LAN. A SIP account is
+provisioned on first boot and a Linphone profile is published at
+`http://192.168.1.1:8080/linphone.xml` by a dedicated uhttpd listener whose
+document root is **only** `/www/awvoice-provision` — never the LuCI root, and
+plain HTTP, so no certificate warning can appear.
+
+<p align="center">
+  <img src="docs/awvoice-linphone-qr.svg" width="220" alt="Linphone account QR code for awvoice@192.168.1.1">
+</p>
+
+Scan that with Linphone and it registers. The printed code names
+`192.168.1.1`; after a LAN renumbering use **Services → AWvoice → SIP → Show a
+Linphone QR code**, which writes a fresh file with the box's current address.
+
+| SIP setting | Value |
+| --- | --- |
+| Server | `192.168.1.1` |
+| Port | `5060` (UDP or TCP) |
+| Username / auth | `awvoice` |
+| Realm | `qmodem-voip` |
+| RTP | UDP `40000–40031` |
+| Codecs | PCMA / PCMU (G.711) |
+| Network | `lan` only |
+
+Manual setup in Linphone: **Settings → Accounts → + → SIP** — username
+`awvoice`, SIP address `sip:awvoice@192.168.1.1`, server `192.168.1.1:5060`,
+transport UDP, and the password from the SIP tab.
+
+> **Security warning.** The shipped SIP password is a shared default, published
+> in this repo. Anyone on the LAN who knows it can place calls through the SIM
+> and run up carrier charges. Rotate it with **Create a new password** before
+> using the router with people you do not trust, and never forward `5060` or
+> `40000–40031` from the WAN. Voice itself also depends on the module, firmware,
+> USB composition and operator profile; a combination QModem does not cover
+> leaves both the handset and the SIP side silent without failing the boot.
+
 ---
 
 ## Where the packets go
@@ -143,6 +196,13 @@ that is the failure the build now refuses to ship.
 
 ## Highlights
 
+- **Lightweight by design.** The whole firmware is **37.2 MB** (35.4 MiB) —
+  one squashfs sysupgrade, ~7 MiB smaller than the 1.1.1 image after dropping
+  Tailscale, Wake-on-LAN, Dynamic DNS and WireGuard. Small enough to fit in
+  `/tmp` for the upgrade, lean enough that 1 GB RAM and four A53 cores stay
+  idle: no swap pressure, 575 MB of overlay free, ~62% memory available on a
+  live box with 5 clients. Speed comes from the NSS cores, not from adding
+  packages.
 - **NSS offload that is actually wired.** EDMA on every wired port, ECM
   acceleration, `rmnet_rx` on NSS core 1, DTS marks `&nss1` okay. PPE is off on
   purpose.
