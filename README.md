@@ -44,9 +44,10 @@ instead of an empty script that exits silently.
 
 The installer checks the licence **before** it downloads anything, verifies the
 server-side sha256, runs the firmware's own `sysupgrade -T` image check with no
-write, and only then calls `sysupgrade -v -n`. It **erases the config by
-default**; add `--keep` only for a BYTE-to-BYTE upgrade you want to carry over. It
-never passes `-F`, and it never assumes an empty root password.
+write, and only then calls `sysupgrade -v -n`. It **always erases the config** — the same result as
+LuCI's *System → Backup / Flash Firmware* with *Keep settings* unticked, and
+that includes BYTE-to-BYTE. It never passes `-F`, and it never assumes an empty
+root password.
 
 Send the device id to **[@bytewrt](https://t.me/bytewrt)** on Telegram for
 approval. Full flow, flags and the recovery path: **[docs/flash.md](docs/flash.md)**.
@@ -267,7 +268,7 @@ All 345 packages: **[docs/packages.md](docs/packages.md)**.
 
 | Doc | Content |
 | --- | --- |
-| [docs/flash.md](docs/flash.md) | install, flags, licence, `--keep`, recovery |
+| [docs/flash.md](docs/flash.md) | install, flags, licence, recovery |
 | [docs/apps.md](docs/apps.md) | every LuCI page and what it does |
 | [docs/packages.md](docs/packages.md) | all 345 packages, grouped |
 

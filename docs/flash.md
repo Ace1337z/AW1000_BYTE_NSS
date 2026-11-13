@@ -105,7 +105,12 @@ maintenance window: Sunday 02:00-03:00 MYT
 5. sha256 verification against the server value
 6. `sysupgrade -T` — the running firmware's own image check (metadata, board
    match, config compat, signature policy) with **no write**
-7. `sysupgrade -v -n` — **config erased**
+7. read-only pre-flight — walks the same chain `nand_do_upgrade` will walk
+   (UBI device, the mtd name `find_mtd_index` resolves, the `kernel` / `rootfs`
+   / `rootfs_data` volumes, `ubi-utils`, reusable eraseblocks, the `kernel` and
+   `root` members inside the image) so a write that cannot work stops here
+   instead of ending in a silent reboot
+8. `sysupgrade -v -n` — **config erased**
 
 Step 6 is why a refusal is reported before anything is written: the check that
 `sysupgrade` would run itself is run first, on the same image, by the same code.
@@ -113,11 +118,9 @@ Step 6 is why a refusal is reported before anything is written: the check that
 ### Flags
 
 ```sh
-sh /tmp/byte-i.sh BYTE-1.1.3   # pin a tag, config still erased
-sh /tmp/byte-i.sh              # default: erase config (-n)
-sh /tmp/byte-i.sh --keep       # keep /etc/config (BYTE-to-BYTE upgrade)
-sh /tmp/byte-i.sh --wipe       # explicit wipe, same as the default
-sh /tmp/byte-i.sh --check      # dry run: board, licence, space, sha256, mode
+sh /tmp/byte-i.sh BYTE-1.1.4   # pin a tag, config still erased
+sh /tmp/byte-i.sh              # the only mode: erase config (-n)
+sh /tmp/byte-i.sh --check      # dry run: board, licence, space, sha256
 sh /tmp/byte-i.sh --debug      # set -x trace for support
 sh /tmp/byte-i.sh -y           # no prompt
 BYTE_YES=1 sh /tmp/byte-i.sh   # same, via env
@@ -127,7 +130,10 @@ BYTE_API=https://host sh /tmp/byte-i.sh   # override the licence endpoint
 ### What it will never do
 
 - Pass `-F`. That skips board and metadata validation and is a brick vector.
-- Keep a config you did not ask for: the default wipes (`-n`), `--keep` opts in.
+- Keep a config. There is one flash mode, a clean install (`sysupgrade -n`) —
+  the same result as LuCI's **System → Backup / Flash Firmware** with
+  **Keep settings** unticked. `--keep` exits with an explanation rather than
+  silently wiping a config you thought you kept.
 - Flash an image whose sha256 differs from the server value.
 - Gate halfway: a denial never leaves a partial image behind.
 - Assume or change the root password.
@@ -136,9 +142,10 @@ BYTE_API=https://host sh /tmp/byte-i.sh   # override the licence endpoint
 
 The installer itself is firmware-agnostic. Two things to expect:
 
-- **Wipe.** `--keep` across firmware families usually produces a box without
-  `wwand`, with an HTTPS listener, or with a dnsmasq that fights AdGuard Home.
-  The default wipe is what you want.
+- **Wipe, always.** Configs from another firmware family leave boxes without
+  `wwand`, with an HTTPS listener, or with a dnsmasq that fights AdGuard Home,
+  so nothing is carried over — not even between BYTE versions. Kernel version
+  and package manager do not matter: everything goes through `sysupgrade -n`.
 - **Board name.** The image declares `supported_devices: arcadyan,aw1000`. A
   build that reports something else (a vendor fork using `arcadyan,aw1000-v1`,
   for example) is rejected by that firmware's own image check. The installer
