@@ -3,7 +3,13 @@
 BYTE ships one artifact: a squashfs **sysupgrade** image. There is no factory
 image, no web-UI installer and no initramfs in the release. The installer is a
 small shell script that checks a per-device licence, downloads the image over
-HTTPS, verifies the sha256 and calls `sysupgrade -v`.
+HTTPS, verifies the sha256, runs the firmware's own image check, and only then
+calls `sysupgrade`.
+
+It runs on **BYTE and on any other OpenWrt build for this board**. That matters:
+most owners arrive from stock OpenWrt, which has no `curl`. The installer needs
+`sysupgrade`, a sha256 tool and one of `curl`/`uclient-fetch`/`wget`; nothing
+else has to be installed.
 
 Read [Recovery](#recovery) before you run it. A flash you cannot undo is a brick.
 
@@ -12,39 +18,36 @@ Read [Recovery](#recovery) before you run it. A flash you cannot undo is a brick
 ## 1. Get the device id
 
 ```sh
-sh -c "$(curl -fsSL https://byte-gate.pages.dev/i.sh)" _ --id
+# wget exists on every OpenWrt; the "&&" makes a failed download print an error
+wget -qO /tmp/byte-i.sh https://byte-gate.pages.dev/i.sh && sh /tmp/byte-i.sh --id
 ```
 
 or, with the script already on the box:
 
 ```sh
-curl -fsSL https://byte-gate.pages.dev/i.sh -o /tmp/install.sh
-sh /tmp/install.sh --id
+curl -fsSL https://byte-gate.pages.dev/i.sh -o /tmp/byte-i.sh
+sh /tmp/byte-i.sh --id
 ```
-
-The `_` is the placeholder for `$0`; without it the flag would be swallowed as
-the shell's own name and the installer would see no arguments.
 
 It prints 24 hex characters and nothing else on stdout. That id is
 `sha256(eth0 + br-lan + phy0-ap0 + phy1-ap0 MAC)`, truncated. It contains no
 IMEI, ICCID, subscriber or traffic data.
 
-Send it to **[@bytewrt](https://t.me/bytewrt)** on Telegram. Getting the id is
+Send it to **[@bytewrt](https://t.me/bytewrt)** on Telegram. Requesting the id is
 also what records the install request, so you do not have to explain anything
 else. Approval is manual.
 
 ## 2. Install
 
 ```sh
-sh -c "$(curl -fsSL https://byte-gate.pages.dev/i.sh)"
+wget -qO /tmp/byte-i.sh https://byte-gate.pages.dev/i.sh && sh /tmp/byte-i.sh
 ```
 
-Nothing is written to disk and your terminal keeps stdin, so the confirmation
-prompt works. The same thing step by step:
+That is the form to use. It needs no `curl`, it survives a failed fetch, and your
+terminal keeps stdin so the confirmation prompt works. The same thing with curl:
 
 ```sh
-curl -fsSL https://byte-gate.pages.dev/i.sh -o /tmp/install.sh
-sh /tmp/install.sh
+curl -fsSL https://byte-gate.pages.dev/i.sh -o /tmp/byte-i.sh && sh /tmp/byte-i.sh
 ```
 
 Do **not** pipe it into `sh`:
@@ -53,16 +56,30 @@ Do **not** pipe it into `sh`:
 curl -fsSL https://byte-gate.pages.dev/i.sh | sh     # refused
 ```
 
-The prompt would read the script from its own body. The installer detects a
+The prompt would read the script from its own body, so the installer detects a
 non-terminal stdin and refuses instead of flashing. `-y` is for genuinely
 unattended runs; the sha256 still has to match.
 
-A passing gate tells you so:
+You do not need an empty root password. The installer runs in the session you
+already opened over SSH or the serial console, so whatever root password the
+router has is the one it uses. It never reads, sets or resets credentials.
+
+A passing run looks like this:
 
 ```
+== BYTE installer v2
 == device id: 33736085cce498b4eca13fb0
+== this box: Arcadyan AW1000 [arcadyan,aw1000] running OpenWrt 24.10.4
 == licence ok (permanent): this device may install BYTE-1.1.3
-== downloading BYTE-1.1.3
+== WARNING: config will be ERASED (-n)
+   about to flash BYTE-1.1.3 and ERASE the config. type yes to continue: yes
+== downloading BYTE-1.1.3 (~37 MB, the router stays online until the flash)
+== downloaded 37171460 bytes, verifying sha256
+   sha256 OK
+== image check with this firmware's own verifier (no write)
+   image check passed
+== flashing BYTE-1.1.3
+== done, the router is rebooting into BYTE-1.1.3
 ```
 
 Temporary licences print the remaining window instead:
@@ -82,24 +99,30 @@ maintenance window: Sunday 02:00-03:00 MYT
 ### Order of operations
 
 1. licence check — a denial happens here, before any byte is downloaded
-2. signed download, resumable
-3. sha256 verification against the server value
-4. confirmation prompt (skipped by `-y`)
-5. `sysupgrade -v -n` — **config erased**
+2. board check — refuses a box that does not identify as an AW1000
+3. confirmation prompt — **before** the transfer, so a wrong answer costs nothing
+4. download, resumable
+5. sha256 verification against the server value
+6. `sysupgrade -T` — the running firmware's own image check (metadata, board
+   match, config compat, signature policy) with **no write**
+7. `sysupgrade -v -n` — **config erased**
+
+Step 6 is why a refusal is reported before anything is written: the check that
+`sysupgrade` would run itself is run first, on the same image, by the same code.
 
 ### Flags
 
 ```sh
-sh install.sh BYTE-1.1.3     # pin a tag, config still erased
-sh install.sh                # default: erase config (-n)
-sh install.sh --keep         # keep /etc/config (BYTE-to-BYTE upgrade)
-sh install.sh --wipe         # explicit wipe, same as the default
-sh install.sh -y             # no prompt
-BYTE_YES=1 sh install.sh     # same, via env
-BYTE_API=https://host sh install.sh   # override the licence endpoint
+sh /tmp/byte-i.sh BYTE-1.1.3   # pin a tag, config still erased
+sh /tmp/byte-i.sh              # default: erase config (-n)
+sh /tmp/byte-i.sh --keep       # keep /etc/config (BYTE-to-BYTE upgrade)
+sh /tmp/byte-i.sh --wipe       # explicit wipe, same as the default
+sh /tmp/byte-i.sh --check      # dry run: board, licence, space, sha256, mode
+sh /tmp/byte-i.sh --debug      # set -x trace for support
+sh /tmp/byte-i.sh -y           # no prompt
+BYTE_YES=1 sh /tmp/byte-i.sh   # same, via env
+BYTE_API=https://host sh /tmp/byte-i.sh   # override the licence endpoint
 ```
-
-Arguments work in both the one-liner and the two-step form.
 
 ### What it will never do
 
@@ -107,18 +130,35 @@ Arguments work in both the one-liner and the two-step form.
 - Keep a config you did not ask for: the default wipes (`-n`), `--keep` opts in.
 - Flash an image whose sha256 differs from the server value.
 - Gate halfway: a denial never leaves a partial image behind.
+- Assume or change the root password.
+
+### Coming from another OpenWrt
+
+The installer itself is firmware-agnostic. Two things to expect:
+
+- **Wipe.** `--keep` across firmware families usually produces a box without
+  `wwand`, with an HTTPS listener, or with a dnsmasq that fights AdGuard Home.
+  The default wipe is what you want.
+- **Board name.** The image declares `supported_devices: arcadyan,aw1000`. A
+  build that reports something else (a vendor fork using `arcadyan,aw1000-v1`,
+  for example) is rejected by that firmware's own image check. The installer
+  reports it as `not supported by this image` and points at serial + U-Boot TFTP,
+  rather than letting `sysupgrade` fail after the download.
 
 ### Resumed transfers
 
-The installer uses `curl -C -` with `--retry 5 --retry-delay 2
---retry-all-errors`, and the server answers `Range` requests with `206`. If the
-mobile uplink stalls or the modem redials mid-download, the next attempt
-continues from the byte it reached. The sha256 check is still the authority.
+The installer uses `curl -C -` with `--retry 5 --retry-delay 2` and, when the
+curl in use supports it, `--retry-all-errors`. The server answers `Range`
+requests with `206`. If the mobile uplink stalls or the modem redials
+mid-download, the next attempt continues from the byte it reached. The sha256
+check is still the authority: a resumed file that does not match is downloaded
+once more from zero and then refused.
 
 ## 3. Requirements on the device
 
-- OpenWrt with `curl`, `jsonfilter`, `sha256sum` and `sysupgrade` — all present
-  in 1.1.x.
+- OpenWrt with `sysupgrade` and a sha256 tool (`sha256sum`, busybox `sha256sum`
+  or `openssl`), plus one fetcher: `curl`, `uclient-fetch` or `wget`. All of
+  these ship in 1.1.x, and stock OpenWrt has `wget` at minimum.
 - About 45 MB free in `/tmp` (image is 37,171,460 bytes; `/tmp` is tmpfs).
 - Working WAN. Both the check and the download need it, so run this while the
   current firmware still has connectivity.
@@ -175,15 +215,19 @@ the serial + TFTP recovery on the running firmware first.
 
 | Symptom | Meaning |
 | --- | --- |
-| `not licensed (http 403)` | request recorded, not approved yet. Re-run after approval. |
-| `not licensed` after a temporary window | licence expired. Ask for another window. |
-| Gate passes, download stalls | client uplink or carrier. Re-run: it resumes. |
-| sha256 mismatch | image never flashed. Re-run; if it repeats, report the tag. |
-| LuCI answers but pages look old | hard-refresh with **Ctrl+Shift+R** (LuCI caches panel JS). |
-| No internet after boot | `ifstatus wan`, `ubus call network.interface.wan status`; interface is `wwand0`. |
+| pasted the command, no output at all, prompt back | old one-liner (`sh -c "$(curl ...)"`) with a failed download: the substitution is empty and `sh -c ""` exits 0 silently. Use `wget -qO /tmp/byte-i.sh … && sh /tmp/byte-i.sh` |
+| banner printed, then nothing before the download | the prompt was answered with Enter, not `yes`, or stdin was not a terminal. Answer `yes`, run from an interactive SSH session, or add `-y` |
+| downloaded, then aborted | the firmware refused the image: board name or config compat. The installer now runs `sysupgrade -T` first and prints the reason. A compat refusal is fixed by wiping (the default) |
+| `refusing: this does not look like an Arcadyan AW1000` | the box does not report an AW1000 in `board_name`, model, DT `compatible` or `oem_name`. Use serial + U-Boot TFTP |
+| `not licensed (http 403)` | request recorded, not approved yet. Re-run after approval |
+| `not licensed` after a temporary window | licence expired. Ask for another window |
+| gate passes, download stalls | client uplink or carrier. Re-run: it resumes |
+| sha256 mismatch | image never flashed. Re-run; if it repeats, report the tag |
+| LuCI answers but pages look old | hard-refresh with **Ctrl+Shift+R** (LuCI caches panel JS) |
+| no internet after boot | `ifstatus wan`, `ubus call network.interface.wan status`; interface is `wwand0` |
 
-Never use `-F` (and never flash a foreign config over BYTE to "fix" a bad
-flash. Serial console is the recovery path.
+Never use `-F`, and never flash a foreign config over BYTE to "fix" a bad flash.
+The serial console is the recovery path.
 
 ## Privacy
 

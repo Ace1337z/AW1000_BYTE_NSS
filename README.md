@@ -31,16 +31,22 @@ configured, not just installed.
 ## Flash it
 
 The image is gated per device. Get the device id, get it approved, then run the
-installer. Nothing is written to disk and the prompt keeps working.
+installer. It works from BYTE and from any other OpenWrt on this board — stock
+OpenWrt has no `curl`, so the `wget` form is the one to use.
 
 ```sh
-sh -c "$(curl -fsSL https://byte-gate.pages.dev/i.sh)"
+wget -qO /tmp/byte-i.sh https://byte-gate.pages.dev/i.sh && sh /tmp/byte-i.sh
 ```
 
-The installer prints your device id, checks the licence **before** it downloads
-anything, verifies the server-side sha256 and calls `sysupgrade -v -n`.
-It **erases the config by default**; add `--keep` only for a BYTE-to-BYTE
-upgrade you want to carry over. It never passes `-F`.
+(`curl -fsSL https://byte-gate.pages.dev/i.sh -o /tmp/byte-i.sh && sh /tmp/byte-i.sh`
+is the same thing.) The `&&` matters: if the fetch fails you see the error,
+instead of an empty script that exits silently.
+
+The installer checks the licence **before** it downloads anything, verifies the
+server-side sha256, runs the firmware's own `sysupgrade -T` image check with no
+write, and only then calls `sysupgrade -v -n`. It **erases the config by
+default**; add `--keep` only for a BYTE-to-BYTE upgrade you want to carry over. It
+never passes `-F`, and it never assumes an empty root password.
 
 Send the device id to **[@bytewrt](https://t.me/bytewrt)** on Telegram for
 approval. Full flow, flags and the recovery path: **[docs/flash.md](docs/flash.md)**.
