@@ -104,11 +104,10 @@ Local LLM gateway: install, service state, node list and request graphs.
 
 ![9Router](docs/screenshots/9router.png)
 
-### Status → Traffic Monitor
+### Tools → VnStats
 
-vnStat 2.13 graphs — summary, top talkers, 5-minute, hourly, daily, monthly and
-yearly, per interface. The page is hidden behind a marker file by default; see
-[docs/apps.md](docs/apps.md#hidden-pages).
+vnStat 2.13 usage graphs — daily, monthly, per interface selectable from the
+page (`br-lan`, `wwan0`, `wwand0`).
 
 ![vnStat graphs](docs/screenshots/vnstat.png)
 

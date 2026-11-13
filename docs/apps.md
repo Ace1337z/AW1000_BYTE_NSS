@@ -30,12 +30,6 @@ not scaled by 1024. vnStat 1.x still uses the KiB fallback.
 `sync` + `drop_caches` on demand, for when the page cache has eaten the box after
 a big download or a 9Router install.
 
-### Status → Traffic Monitor
-
-vnStat 2.13 graphs: summary, top talkers, 5-minute, hourly, daily, monthly,
-yearly, per interface (`wwand0`, `br-lan`, radios). Clear-data button included.
-The page is hidden behind a marker file by default; see [Hiding pages](#hiding-pages).
-
 ### Status → NSS Offload
 
 Offload counters: ECM accelerated flows, NSS core load, per-core queue
@@ -206,6 +200,11 @@ flow dies in ~2 ms. With RA advertising that prefix, browsers tried AAAA first,
 failed, then retried over IPv4 — pages loaded, not instantly. When your carrier
 routes the prefix, flip this switch.
 
+### Tools → VnStats
+
+vnStat 2.13 traffic graphs. Pick the interface (`br-lan`, `wwan0`, `wwand0`) and
+the view (daily or monthly); the charts render inline, so no external image.
+
 ### Tools → 9Router
 
 Local LLM gateway: install from the page, service state, node list and request
@@ -232,18 +231,6 @@ Root password, SSH access, hostname, timezone. Timezone defaults to
 `Asia/Kuala_Lumpur` (`<+08>-8`, `zonename=Asia/Kuala_Lumpur`).
 
 ---
-
-## Hidden pages
-
-`Status → Traffic Monitor` is hidden unless the marker file exists:
-
-```sh
-touch /etc/aw1000/show-vnstat2
-rm -f /tmp/luci-indexcache*      # LuCI caches the menu
-```
-
-Remove the file to hide it again. The marker is checked by
-`/usr/share/luci/menu.d/zz-aw1000-hide-vnstat2.json`.
 
 ## After an upgrade
 
