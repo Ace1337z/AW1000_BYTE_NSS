@@ -1,4 +1,4 @@
-# BYTE 1.1.3 — page by page
+# BYTE 1.1.4 — page by page
 
 Every menu entry that BYTE adds or changes, in the order you hit it. The stock
 LuCI pages (firewall, DHCP, system, package manager) are untouched unless noted.
@@ -17,7 +17,7 @@ SSID count, station list with signal, storage, and the network path from
 `wwand0` to this access point.
 
 The **System** panel is branded: hostname, model, kernel, local time, uptime and
-`BYTE v1.1.3`. Architecture, target platform and load average were removed on
+`BYTE v1.1.4`. Architecture, target platform and load average were removed on
 purpose. It is rewritten by a first-boot `uci-defaults` script, so a sysupgrade
 never brings the stock panel back.
 
@@ -48,7 +48,7 @@ identity: MCC/MNC, cell id in hex and decimal, PCI, TAC, EARFCN, NR ARFCN. APN
 and data session state below.
 
 **Trend** sparklines for RSRP and SINR (LTE and 5G) render from
-`/tmp/aw1000-status/history`. In 1.1.3 they are drawn with
+`/tmp/aw1000-status/history`. Since 1.1.3 they are drawn with
 `document.createElementNS`, so the shapes survive the SVG namespace — 1.1.2
 showed a legend next to an empty plot.
 
@@ -178,7 +178,7 @@ validated with `AdGuardHome --check-config` **before** it replaces the installed
 one, so a bad write cannot take DNS down. Credentials land in
 `/etc/agh-pw-backup/agh-admin.txt`.
 
-In 1.1.3 this works: 1.1.2 wrote `192.168.1.1/24` (with prefix) into
+Since 1.1.3 this works: 1.1.2 wrote `192.168.1.1/24` (with prefix) into
 `bind_hosts` and `http.address`, which take bare addresses, so validation failed
 and the whole install rolled back. The first-run admin also failed with HTTP 400
 because the install API bound the DNS address while dnsmasq still owned `:53`.

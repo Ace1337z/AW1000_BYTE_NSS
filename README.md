@@ -1,6 +1,6 @@
 # BYTE for Arcadyan AW1000
 
-![BYTE 1.1.3](https://img.shields.io/badge/BYTE-1.1.3-4cc2ff?style=flat-square)
+![BYTE 1.1.4](https://img.shields.io/badge/BYTE-1.1.4-4cc2ff?style=flat-square)
 ![target](https://img.shields.io/badge/target-ipq807x%20%C2%B7%20aw1000-1f6feb?style=flat-square)
 ![kernel](https://img.shields.io/badge/kernel-6.18.55-2ea043?style=flat-square)
 ![packages](https://img.shields.io/badge/packages-345-a371f7?style=flat-square)
@@ -11,11 +11,11 @@ One sysupgrade image, a dark-first LuCI, a working RJ11 phone, PassWall2, AdGuar
 Home wiring, 9Router, modem telemetry — and 345 packages that are actually
 configured, not just installed.
 
-![BYTE 1.1.3 on the Arcadyan AW1000](docs/hardware.svg)
+![BYTE 1.1.4 on the Arcadyan AW1000](docs/hardware.svg)
 
 | | |
 | --- | --- |
-| Release | **BYTE 1.1.3** (`r0-d6c8942`) |
+| Release | **BYTE 1.1.4** (`r0-d6c8942`) |
 | Target | `qualcommax` / `ipq807x` · profile `arcadyan_aw1000` |
 | SoC | Qualcomm IPQ8072A, 4 × Cortex-A53, 1 GB RAM |
 | Kernel | Linux **6.18.55** |
@@ -75,7 +75,7 @@ approval. Full flow, flags and the recovery path: **[docs/flash.md](docs/flash.m
 
 ## What it looks like
 
-Real 1.1.3 captures from a running AW1000, dark mode, Vantage theme.
+Real captures from a running AW1000, dark mode, Vantage theme.
 Identifiers are masked: MACs, public IPv4/IPv6, ICCID, IMEI, MSISDN and client
 hostnames.
 
@@ -240,6 +240,18 @@ that is the failure the build now refuses to ship.
 - **DNS that adds up.** One-shot wiring: LAN `:53` → AdGuard Home → PassWall2
   `127.0.0.1:15353`, dnsmasq on `:54` for `.lan`. Config validated with
   `--check-config` before it replaces the installed one.
+- **DNS survives a stalled tunnel.** 1.1.4 adds the carrier resolvers from the
+  WAN lease as AdGuard Home fallbacks (`AGH_FALLBACK=auto`), a 3 s upstream
+  timeout, and an `agh-pw-guard` procd service that re-checks the path every
+  60 s. A dead Xray stub no longer black-holes the LAN for hours.
+- **The installer cannot lie about a flash.** The image lives outside every
+  scratch directory, a read-only UBI pre-flight walks the chain
+  `nand_do_upgrade` will write, and a marker in `/etc` proves afterwards
+  whether the write actually happened.
+- **Signed releases.** The installer and every image carry an ed25519/usign
+  signature (`dcdb9655603fd9a0`) made with a key Cloudflare never sees, so a
+  compromised licence gate can withhold a build but cannot substitute one.
+  Verification commands: [docs/flash.md](docs/flash.md).
 - **One-click AdGuard Home password change.** Rewrites the bcrypt hash in
   `users:`, validates, restarts, updates the backup copy. No Python or Perl
   needed — 20 KB static helper.

@@ -1,6 +1,6 @@
-# BYTE 1.1.3 package set
+# BYTE 1.1.4 package set
 
-345 packages installed on the running AW1000 (`apk info`, 1.1.3 build
+345 packages installed on the running AW1000 (`apk info`, 1.1.4 build
 `r0-d6c8942`). This is the whole list, grouped by what it does. Nothing here is
 "installed but broken": every group below has a UI page or a CLI that uses it.
 
