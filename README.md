@@ -43,11 +43,26 @@ is the same thing.) The `&&` matters: if the fetch fails you see the error,
 instead of an empty script that exits silently.
 
 The installer checks the licence **before** it downloads anything, verifies the
-server-side sha256, runs the firmware's own `sysupgrade -T` image check with no
-write, and only then calls `sysupgrade -v -n`. It **always erases the config** — the same result as
+server-side sha256, verifies the image's ed25519 signature against the BYTE
+release key (fingerprint `dcdb9655603fd9a0`, public key in
+[`pubkey/byte-signing.pub`](pubkey/byte-signing.pub)), runs the firmware's own
+`sysupgrade -T` image check with no write, and only then calls
+`sysupgrade -v -n`. It **always erases the config** — the same result as
 LuCI's *System → Backup / Flash Firmware* with *Keep settings* unticked, and
 that includes BYTE-to-BYTE. It never passes `-F`, and it never assumes an empty
 root password.
+
+The signing key's private half never reaches Cloudflare, so a compromised
+licence gate can withhold an image but cannot substitute one. Check the script
+before running it as root:
+
+```sh
+wget -qO /tmp/byte-i.sh.sig https://byte-gate.pages.dev/i.sh.sig
+wget -qO /tmp/byte-signing.pub \
+  https://raw.githubusercontent.com/Ace1337z/AW1000_BYTE_NSS/main/pubkey/byte-signing.pub
+usign -F -p /tmp/byte-signing.pub            # dcdb9655603fd9a0
+usign -V -q -p /tmp/byte-signing.pub -m /tmp/byte-i.sh -x /tmp/byte-i.sh.sig
+```
 
 Send the device id to **[@bytewrt](https://t.me/bytewrt)** on Telegram for
 approval. Full flow, flags and the recovery path: **[docs/flash.md](docs/flash.md)**.

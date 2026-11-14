@@ -67,19 +67,51 @@ router has is the one it uses. It never reads, sets or resets credentials.
 A passing run looks like this:
 
 ```
-== BYTE installer v2
+== BYTE installer v5
 == device id: 33736085cce498b4eca13fb0
 == this box: Arcadyan AW1000 [arcadyan,aw1000] running OpenWrt 24.10.4
-== licence ok (permanent): this device may install BYTE-1.1.3
+== licence ok (permanent): this device may install BYTE-1.1.4
 == WARNING: config will be ERASED (-n)
-   about to flash BYTE-1.1.3 and ERASE the config. type yes to continue: yes
-== downloading BYTE-1.1.3 (~37 MB, the router stays online until the flash)
+   about to flash BYTE-1.1.4 and ERASE the config. type yes to continue: yes
+== downloading BYTE-1.1.4 (~37 MB, the router stays online until the flash)
 == downloaded 37171460 bytes, verifying sha256
    sha256 OK
+   signature OK (ed25519 dcdb9655603fd9a0)
 == image check with this firmware's own verifier (no write)
    image check passed
-== flashing BYTE-1.1.3
-== done, the router is rebooting into BYTE-1.1.3
+== flashing BYTE-1.1.4
+== done, the router is rebooting into BYTE-1.1.4
+```
+
+### The script and the image are signed
+
+One ed25519 key signs both. The private half stays on the release machine — it
+is not a Cloudflare secret — so a compromised gate can withhold a release but
+cannot forge a different one.
+
+```
+fingerprint  dcdb9655603fd9a0
+public key   https://raw.githubusercontent.com/Ace1337z/AW1000_BYTE_NSS/main/pubkey/byte-signing.pub
+```
+
+Verify the installer before running it as root:
+
+```sh
+wget -qO /tmp/byte-i.sh.sig https://byte-gate.pages.dev/i.sh.sig
+wget -qO /tmp/byte-signing.pub \
+  https://raw.githubusercontent.com/Ace1337z/AW1000_BYTE_NSS/main/pubkey/byte-signing.pub
+usign -F -p /tmp/byte-signing.pub        # must print dcdb9655603fd9a0
+usign -V -q -p /tmp/byte-signing.pub -m /tmp/byte-i.sh -x /tmp/byte-i.sh.sig
+```
+
+Every BYTE image ships `/usr/bin/usign`, so the installer repeats that check
+against `/sig/<tag>` before it flashes. A signature that is present but wrong
+is always fatal; a tag with no signature, or a box without `usign`, warns and
+falls back to sha256. Set `BYTE_REQUIRE_SIG=1` on the command line to make both
+of those refusals instead:
+
+```sh
+BYTE_REQUIRE_SIG=1 sh /tmp/byte-i.sh
 ```
 
 Temporary licences print the remaining window instead:
@@ -103,16 +135,17 @@ maintenance window: Sunday 02:00-03:00 MYT
 3. confirmation prompt — **before** the transfer, so a wrong answer costs nothing
 4. download, resumable
 5. sha256 verification against the server value
-6. `sysupgrade -T` — the running firmware's own image check (metadata, board
+6. ed25519 signature check — `/sig/<tag>` verified with the embedded release key
+7. `sysupgrade -T` — the running firmware's own image check (metadata, board
    match, config compat, signature policy) with **no write**
-7. read-only pre-flight — walks the same chain `nand_do_upgrade` will walk
+8. read-only pre-flight — walks the same chain `nand_do_upgrade` will walk
    (UBI device, the mtd name `find_mtd_index` resolves, the `kernel` / `rootfs`
    / `rootfs_data` volumes, `ubi-utils`, reusable eraseblocks, the `kernel` and
    `root` members inside the image) so a write that cannot work stops here
    instead of ending in a silent reboot
-8. `sysupgrade -v -n` — **config erased**
+9. `sysupgrade -v -n` — **config erased**
 
-Step 6 is why a refusal is reported before anything is written: the check that
+Step 7 is why a refusal is reported before anything is written: the check that
 `sysupgrade` would run itself is run first, on the same image, by the same code.
 
 ### Flags
@@ -125,6 +158,7 @@ sh /tmp/byte-i.sh --debug      # set -x trace for support
 sh /tmp/byte-i.sh -y           # no prompt
 BYTE_YES=1 sh /tmp/byte-i.sh   # same, via env
 BYTE_API=https://host sh /tmp/byte-i.sh   # override the licence endpoint
+BYTE_REQUIRE_SIG=1 sh /tmp/byte-i.sh      # refuse a tag with no signature
 ```
 
 ### What it will never do
@@ -135,6 +169,8 @@ BYTE_API=https://host sh /tmp/byte-i.sh   # override the licence endpoint
   **Keep settings** unticked. `--keep` exits with an explanation rather than
   silently wiping a config you thought you kept.
 - Flash an image whose sha256 differs from the server value.
+- Flash an image whose signature is present but does not verify with the BYTE
+  release key (`dcdb9655603fd9a0`), even if the sha256 matches.
 - Gate halfway: a denial never leaves a partial image behind.
 - Assume or change the root password.
 
@@ -180,7 +216,7 @@ dial.
 
 ```sh
 cat /tmp/sysinfo/board_name                  # arcadyan,aw1000
-cat /etc/openwrt_release | grep -i byte      # BYTE 1.1.3
+cat /etc/openwrt_release | grep -i byte      # BYTE 1.1.4
 uci -q get network.wwan.mtu                  # 1420
 ip link show wwand0 | grep -o 'mtu [0-9]*'   # mtu 1420
 cat /sys/class/net/wwand0/type               # 519 (raw-IP, NSS-bound)
@@ -230,6 +266,7 @@ the serial + TFTP recovery on the running firmware first.
 | `not licensed` after a temporary window | licence expired. Ask for another window |
 | gate passes, download stalls | client uplink or carrier. Re-run: it resumes |
 | sha256 mismatch | image never flashed. Re-run; if it repeats, report the tag |
+| `the image is not signed by dcdb9655603fd9a0` | the bytes did not come from the release key. Nothing was written. Report the tag to [@bytewrt](https://t.me/bytewrt); do not retry with `-F` |
 | LuCI answers but pages look old | hard-refresh with **Ctrl+Shift+R** (LuCI caches panel JS) |
 | no internet after boot | `ifstatus wan`, `ubus call network.interface.wan status`; interface is `wwand0` |
 
