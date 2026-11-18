@@ -1,12 +1,12 @@
-# BYTE 1.1.4 package set
+# BYTE 1.1.5 package set
 
-345 packages installed on the running AW1000 (`apk info`, 1.1.4 build
+348 packages installed on the running AW1000 (`apk info`, 1.1.5 build
 `r0-d6c8942`). This is the whole list, grouped by what it does. Nothing here is
 "installed but broken": every group below has a UI page or a CLI that uses it.
 
 ```
 $ apk info | wc -l
-345
+348
 ```
 
 ---
@@ -64,8 +64,7 @@ CPU.
 
 ## Proxy, VPN and tunnelling
 
-`xray-core`, `chinadns-ng`, `dns2socks`, `dns2tcp`, `microsocks`,
-`amneziawg-tools`, `kmod-amneziawg`, `kmod-udptunnel4`, `kmod-udptunnel6`,
+`xray-core` (prebuilt 26.2.6), `tailscale`, `amneziawg-tools`, `kmod-amneziawg`, `kmod-udptunnel4`, `kmod-udptunnel6`,
 `kmod-tun`, `tcping`, `kmod-crypto-acompress`, `kmod-crypto-aead`,
 `kmod-crypto-ccm`, `kmod-crypto-cmac`, `kmod-crypto-crc32c`, `kmod-crypto-ctr`,
 `kmod-crypto-gcm`, `kmod-crypto-geniv`, `kmod-crypto-gf128`,
@@ -118,11 +117,12 @@ image (dropbear is not installed).
 `luci-app-9router`, `luci-app-aw1000-modem`, `luci-app-awvoice`,
 `luci-app-bcp38`, `luci-app-byte`, `luci-app-filemanager`, `luci-app-firewall`,
 `luci-app-modeminfo`, `luci-app-netstat`, `luci-app-nlbwmon`, `luci-app-nss`,
-`luci-app-nssqos`, `luci-app-package-manager`, `luci-app-passwall`,
-`luci-app-passwall2`, `luci-app-qmodem-ttlfw4`, `luci-app-ramfree`,
-`luci-app-sqm`, `luci-app-vantage`, `luci-app-vnstat2`, `luci-app-wwand`
+`luci-app-nssqos`, `luci-app-package-manager`, `luci-app-passwall2`,
+`luci-app-qmodem-ttlfw4`, `luci-app-ramfree`, `luci-app-sqm`,
+`luci-app-tailscale-community`, `luci-app-ttyd`, `luci-app-vantage`,
+`luci-app-vnstat2`, `luci-app-wwand`, `luci-app-aw1k-led`
 
-Twenty-one app packages, every one of them reachable from the menu. See
+Twenty-three app packages, every one of them reachable from the menu. See
 [apps.md](apps.md) for the page-by-page tour.
 
 ## Monitoring and traffic accounting
@@ -189,7 +189,7 @@ it is not part of the base image.
 
 | Dropped | Why |
 | --- | --- |
-| `tailscale` | size; not needed on a CPE |
+| PassWall v1 (`luci-app-passwall`) | second proxy stack and a second DNS owner |
 | Wake-on-LAN | no use on this board |
 | Dynamic DNS | provider-specific, adds a daemon |
 | WireGuard | AmneziaWG supersedes it here |

@@ -70,17 +70,17 @@ A passing run looks like this:
 == BYTE installer v5
 == device id: 33736085cce498b4eca13fb0
 == this box: Arcadyan AW1000 [arcadyan,aw1000] running OpenWrt 24.10.4
-== licence ok (permanent): this device may install BYTE-1.1.4
+== licence ok (permanent): this device may install BYTE-1.1.5
 == WARNING: config will be ERASED (-n)
-   about to flash BYTE-1.1.4 and ERASE the config. type yes to continue: yes
-== downloading BYTE-1.1.4 (~37 MB, the router stays online until the flash)
-== downloaded 37171460 bytes, verifying sha256
+   about to flash BYTE-1.1.5 and ERASE the config. type yes to continue: yes
+== downloading BYTE-1.1.5 (~44 MB, the router stays online until the flash)
+== downloaded 44349700 bytes, verifying sha256
    sha256 OK
    signature OK (ed25519 dcdb9655603fd9a0)
 == image check with this firmware's own verifier (no write)
    image check passed
-== flashing BYTE-1.1.4
-== done, the router is rebooting into BYTE-1.1.4
+== flashing BYTE-1.1.5
+== done, the router is rebooting into BYTE-1.1.5
 ```
 
 ### The script and the image are signed
@@ -151,7 +151,7 @@ Step 7 is why a refusal is reported before anything is written: the check that
 ### Flags
 
 ```sh
-sh /tmp/byte-i.sh BYTE-1.1.4   # pin a tag, config still erased
+sh /tmp/byte-i.sh BYTE-1.1.5   # pin a tag, config still erased
 sh /tmp/byte-i.sh              # the only mode: erase config (-n)
 sh /tmp/byte-i.sh --check      # dry run: board, licence, space, sha256
 sh /tmp/byte-i.sh --debug      # set -x trace for support
@@ -202,7 +202,7 @@ once more from zero and then refused.
 - OpenWrt with `sysupgrade` and a sha256 tool (`sha256sum`, busybox `sha256sum`
   or `openssl`), plus one fetcher: `curl`, `uclient-fetch` or `wget`. All of
   these ship in 1.1.x, and stock OpenWrt has `wget` at minimum.
-- About 45 MB free in `/tmp` (image is 37,171,460 bytes; `/tmp` is tmpfs).
+- About 50 MB free in `/tmp` (image is 44,349,700 bytes; `/tmp` is tmpfs).
 - Working WAN. Both the check and the download need it, so run this while the
   current firmware still has connectivity.
 
@@ -216,7 +216,7 @@ dial.
 
 ```sh
 cat /tmp/sysinfo/board_name                  # arcadyan,aw1000
-cat /etc/openwrt_release | grep -i byte      # BYTE 1.1.4
+cat /etc/openwrt_release | grep -i byte      # BYTE 1.1.5
 uci -q get network.wwan.mtu                  # 1420
 ip link show wwand0 | grep -o 'mtu [0-9]*'   # mtu 1420
 cat /sys/class/net/wwand0/type               # 519 (raw-IP, NSS-bound)

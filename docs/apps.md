@@ -1,4 +1,4 @@
-# BYTE 1.1.4 — page by page
+# BYTE 1.1.5 — page by page
 
 Every menu entry that BYTE adds or changes, in the order you hit it. The stock
 LuCI pages (firewall, DHCP, system, package manager) are untouched unless noted.
@@ -17,7 +17,7 @@ SSID count, station list with signal, storage, and the network path from
 `wwand0` to this access point.
 
 The **System** panel is branded: hostname, model, kernel, local time, uptime and
-`BYTE v1.1.4`. Architecture, target platform and load average were removed on
+`BYTE v1.1.5`. Architecture, target platform and load average were removed on
 purpose. It is rewritten by a first-boot `uci-defaults` script, so a sysupgrade
 never brings the stock panel back.
 
@@ -53,9 +53,11 @@ and data session state below.
 showed a legend next to an empty plot.
 
 ### Modem → Messages
-
 SMS inbox, read, send, delete. Backed by `sms-tool`.
-
+1.1.5 reads **every storage the modem reports** (`AT+CPMS?` → `ME`, `SM`, even
+`MT`), because messages parked in `MT` never appeared before. `AT+CSMS=0` and
+`AT+CNMI=2,1,0,0,0` are re-armed at boot and after every modem reset, so new
+messages are stored rather than only signalled.
 ### Modem → Bands
 
 Per-band enable/disable for LTE and NR, network mode (automatic / LTE / 5G /
@@ -76,6 +78,11 @@ path — do not point another daemon at the same port.
 QModem TTL and hop-limit rewrite for tethering policies. Moved to
 `admin/modem/ttl` in 1.1.2, so it is back in the Modem menu instead of floating
 under Services.
+
+### Modem → Terminal
+`ttyd` in the browser. Upstream `luci-app-ttyd`, with its menu entry moved from
+Services to Modem → Terminal by `overlay/files`. Same credentials as SSH; keep
+it on the LAN.
 
 ---
 
@@ -105,11 +112,11 @@ present are offered.
 Proxied flows terminate in userspace, so they are not NSS-accelerated; direct
 traffic still is. Per-source bypass rules give the NSS more to do.
 
-### Services → Pass Wall
+### Services → Tailscale
 
-PassWall v1 **4.66-8**, vendored, Xray-only, **disabled by default**. It and
-PassWall2 both install transparent-proxy rules and both want `:53`. Run one:
-disable PassWall2 before enabling this.
+`luci-app-tailscale-community` + `tailscale` (1.102.3). Shows the node state,
+the tailnet address and the exit-node controls. Nothing connects until you run
+`tailscale up`; `kmod-tun` is already in the image.
 
 ### Services → Bandwidth Monitor
 
@@ -174,8 +181,10 @@ dnsmasq moves to :54 for DHCP and .lan names
 ```
 
 AdGuard Home is pulled from the firmware's own repository. The new config is
-validated with `AdGuardHome --check-config` **before** it replaces the installed
-one, so a bad write cannot take DNS down. Credentials land in
+validated with `AdGuardHome --check-config` **before** it goes live, so a bad
+write cannot take DNS down. The chain is AdGuard Home on `:53` → Quad9 /
+Cloudflare DoH, with dnsmasq on `:5335` for `.lan` and an nftables redirect at
+priority `-150` for hard-coded resolvers. Credentials land in
 `/etc/agh-pw-backup/agh-admin.txt`.
 
 Since 1.1.3 this works: 1.1.2 wrote `192.168.1.1/24` (with prefix) into
@@ -223,6 +232,13 @@ graphs. Not part of the base image — reinstall after an upgrade; data in
 
 ## System
 
+### System → AW1000 LEDs
+The NoobWRT LED controller (`luci-app-aw1k-led`): 5G signal and modem-state
+colours, thresholds and night mode. Shipped **disabled**, because
+`aw1000-leds` already drives the same red/green/blue signal/5G channels — two
+writers leave the LED in whichever state ran last. Enable it only if you want
+this page to own them:
+`uci set ledstatus.settings.enabled='1'; /etc/init.d/ledstatus enable`.
 ### System → File Manager
 
 Browse, upload, download, edit and delete files on the overlay and on USB
