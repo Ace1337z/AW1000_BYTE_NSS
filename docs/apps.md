@@ -1,4 +1,4 @@
-# BYTE 1.1.5 — page by page
+# BYTE 1.1.8 — page by page
 
 Every menu entry that BYTE adds or changes, in the order you hit it. The stock
 LuCI pages (firewall, DHCP, system, package manager) are untouched unless noted.
@@ -17,7 +17,7 @@ SSID count, station list with signal, storage, and the network path from
 `wwand0` to this access point.
 
 The **System** panel is branded: hostname, model, kernel, local time, uptime and
-`BYTE v1.1.5`. Architecture, target platform and load average were removed on
+`BYTE v1.1.8`. Architecture, target platform and load average were removed on
 purpose. It is rewritten by a first-boot `uci-defaults` script, so a sysupgrade
 never brings the stock panel back.
 
@@ -54,7 +54,7 @@ showed a legend next to an empty plot.
 
 ### Modem → Messages
 SMS inbox, read, send, delete. Backed by `sms-tool`.
-1.1.5 reads **every storage the modem reports** (`AT+CPMS?` → `ME`, `SM`, even
+Since 1.1.5 the page reads **every storage the modem reports** (`AT+CPMS?` → `ME`, `SM`, even
 `MT`), because messages parked in `MT` never appeared before. `AT+CSMS=0` and
 `AT+CNMI=2,1,0,0,0` are re-armed at boot and after every modem reset, so new
 messages are stored rather than only signalled.
@@ -117,6 +117,15 @@ traffic still is. Per-source bypass rules give the NSS more to do.
 `luci-app-tailscale-community` + `tailscale` (1.102.3). Shows the node state,
 the tailnet address and the exit-node controls. Nothing connects until you run
 `tailscale up`; `kmod-tun` is already in the image.
+
+### Network → MultiWAN
+
+mwan3 with its LuCI page. It ships inert and is driven by
+`/usr/sbin/mwan3-autoconfig`: with one uplink the service stays off; when a
+second WAN-like interface is up with IPv4 the watcher creates interface,
+member, policy and a LAN-only rule, adds the uplink to the firewall WAN zone,
+and starts mwan3. Unplug it and balancing stops again. If no member comes
+online it rolls back to single WAN instead of marking traffic with no route.
 
 ### Services → Bandwidth Monitor
 

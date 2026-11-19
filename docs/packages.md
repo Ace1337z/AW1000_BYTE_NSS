@@ -1,12 +1,12 @@
-# BYTE 1.1.5 package set
+# BYTE 1.1.8 package set
 
-348 packages installed on the running AW1000 (`apk info`, 1.1.5 build
+372 packages installed on the running AW1000 (`apk info`, 1.1.8 build
 `r0-d6c8942`). This is the whole list, grouped by what it does. Nothing here is
 "installed but broken": every group below has a UI page or a CLI that uses it.
 
 ```
 $ apk info | wc -l
-348
+372
 ```
 
 ---
@@ -119,10 +119,10 @@ image (dropbear is not installed).
 `luci-app-modeminfo`, `luci-app-netstat`, `luci-app-nlbwmon`, `luci-app-nss`,
 `luci-app-nssqos`, `luci-app-package-manager`, `luci-app-passwall2`,
 `luci-app-qmodem-ttlfw4`, `luci-app-ramfree`, `luci-app-sqm`,
-`luci-app-tailscale-community`, `luci-app-ttyd`, `luci-app-vantage`,
+`luci-app-mwan3`, `luci-app-tailscale-community`, `luci-app-ttyd`, `luci-app-vantage`,
 `luci-app-vnstat2`, `luci-app-wwand`, `luci-app-aw1k-led`
 
-Twenty-three app packages, every one of them reachable from the menu. See
+Twenty-four app packages, every one of them reachable from the menu. See
 [apps.md](apps.md) for the page-by-page tour.
 
 ## Monitoring and traffic accounting

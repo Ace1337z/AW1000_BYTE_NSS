@@ -1,28 +1,28 @@
 # BYTE for Arcadyan AW1000
 
-![BYTE 1.1.5](https://img.shields.io/badge/BYTE-1.1.5-4cc2ff?style=flat-square)
+![BYTE 1.1.8](https://img.shields.io/badge/BYTE-1.1.8-4cc2ff?style=flat-square)
 ![target](https://img.shields.io/badge/target-ipq807x%20%C2%B7%20aw1000-1f6feb?style=flat-square)
 ![kernel](https://img.shields.io/badge/kernel-6.18.55-2ea043?style=flat-square)
-![packages](https://img.shields.io/badge/packages-348-a371f7?style=flat-square)
+![packages](https://img.shields.io/badge/packages-372-a371f7?style=flat-square)
 ![image](https://img.shields.io/badge/image-sysupgrade%20only-d29922?style=flat-square)
 
 **OpenWrt 6.18 with Qualcomm NSS hardware offload, rebuilt around the AW1000 5G CPE.**
 One sysupgrade image, a dark-first LuCI, a working RJ11 phone, PassWall2, AdGuard
-Home wiring, 9Router, modem telemetry — and 348 packages that are actually
+Home wiring, 9Router, modem telemetry — and 372 packages that are actually
 configured, not just installed.
 
-![BYTE 1.1.5 on the Arcadyan AW1000](docs/hardware.svg)
+![BYTE 1.1.8 on the Arcadyan AW1000](docs/hardware.svg)
 
 | | |
 | --- | --- |
-| Release | **BYTE 1.1.5** (`r0-d6c8942`) |
+| Release | **BYTE 1.1.8** (`r0-d6c8942`) |
 | Target | `qualcommax` / `ipq807x` · profile `arcadyan_aw1000` |
 | SoC | Qualcomm IPQ8072A, 4 × Cortex-A53, 1 GB RAM |
 | Kernel | Linux **6.18.55** |
 | NSS | firmware **12.5**, 1 GB memory profile, `qca-nss-drv` + ECM |
 | Wi-Fi | ath11k, Wi-Fi 6, 2.4 GHz + 5 GHz (160 MHz capable) |
-| Image | squashfs **sysupgrade only** — **44.3 MB** (42.3 MiB), one file |
-| Packages | **348** installed |
+| Image | squashfs **sysupgrade only** — **45.3 MB** (43.2 MiB), one file |
+| Packages | **372** installed |
 | Theme | Vantage (dark + light), Bootstrap fallback |
 | Build | pinned OpenWrt `nss-edma` tree, reproducible from CI |
 
@@ -219,7 +219,7 @@ that is the failure the build now refuses to ship.
 
 ## Highlights
 
-- **One image, deliberate size.** **44.3 MB** (42.3 MiB) of squashfs sysupgrade.
+- **One image, deliberate size.** **45.3 MB** (43.2 MiB) of squashfs sysupgrade.
   Tailscale returned in 1.1.5 (+≈7 MB); Wake-on-LAN, Dynamic DNS and WireGuard
   stay out. Fits in `/tmp` for the upgrade, and 1 GB RAM plus four A53 cores
   stay idle: no swap pressure, ~600 MB of overlay free. Speed comes from the
@@ -235,6 +235,12 @@ that is the failure the build now refuses to ship.
 - **Working RJ11 phone.** `awvoice-phoned` drives the line chip directly; QModem
   is pinned to a different AT port. Dial tone, caller ID, DTMF, hold, call
   waiting, 3-way, quiet hours, call log, recording, answering machine.
+- **Plug-and-play multi-WAN.** mwan3 and its LuCI page ship in the image. A
+  watcher scans netifd: one uplink means mwan3 stays off; a second WAN that
+  comes up with IPv4 gets an interface/member/policy automatically, is added
+  to the firewall WAN zone, and balancing starts. Unplug it and mwan3 turns
+  itself off again. If no member comes online it rolls back instead of
+  leaving traffic with no route.
 - **DNS with one owner.** AdGuard Home holds `:53`; dnsmasq moves to `:5335`
   for `.lan`; external names resolve over DoH (Quad9 + Cloudflare), so a
   PassWall2 node restart cannot take resolution down. An nftables chain at
@@ -272,7 +278,7 @@ that is the failure the build now refuses to ship.
   only one at a time, by design.
 
 Details and the reasoning behind each 1.1.x change: **[docs/apps.md](docs/apps.md)**.
-All 348 packages: **[docs/packages.md](docs/packages.md)**.
+All 372 packages: **[docs/packages.md](docs/packages.md)**.
 
 ---
 
@@ -303,7 +309,7 @@ All 348 packages: **[docs/packages.md](docs/packages.md)**.
 | --- | --- |
 | [docs/flash.md](docs/flash.md) | install, flags, licence, recovery |
 | [docs/apps.md](docs/apps.md) | every LuCI page and what it does |
-| [docs/packages.md](docs/packages.md) | all 348 packages, grouped |
+| [docs/packages.md](docs/packages.md) | all 372 packages, grouped |
 
 ## Scope
 
