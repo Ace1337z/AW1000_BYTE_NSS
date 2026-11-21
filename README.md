@@ -8,7 +8,7 @@
 
 **OpenWrt 6.18 with Qualcomm NSS hardware offload, rebuilt around the AW1000 5G CPE.**
 One sysupgrade image, a dark-first LuCI, a working RJ11 phone, PassWall2, AdGuard
-Home wiring, 9Router, modem telemetry — and 374 packages that are actually
+Home wiring, 9Router, ByteHelper, modem telemetry — and 374 packages that are actually
 configured, not just installed.
 
 ![BYTE 1.2.0 on the Arcadyan AW1000](docs/hardware.svg)
@@ -73,7 +73,27 @@ approval. Full flow, flags and the recovery path: **[docs/flash.md](docs/flash.m
 > serial (115200 8N1) or the vendor U-Boot TFTP recovery reachable before you
 > flash. Details in [docs/flash.md](docs/flash.md#recovery).
 
-## ByteHelper footer fix (1.2.0)
+## ByteHelper
+
+A top-level LuCI app, between Services and Network, that chats with any
+OpenAI-compatible model and lets it operate the router through a fixed tool
+set. No Node runtime, no account: one static 5.7 MB binary plus two LuCI pages.
+
+- **Chat.** The model can call `run_command`, `read_file`, `write_file`, `uci`,
+  `ubus`, `service`, `diagnose`, and `package_search/info/list/install/remove`.
+  Tool calls and output are shown; the conversation survives page reloads;
+  Stop cancels a turn, New chat clears it.
+- **Confirmation.** Mutating actions run only after a confirmation. With
+  **Allow changes** off the model is read-only and prints the plan.
+- **Refusals.** `sysupgrade`, `mtd write/erase`, `firstboot`, reboot/halt/
+  poweroff, `mkfs/fdisk/dd` to a device, `rm -rf /`, `passwd`, `dropbear`,
+  `/etc/shadow`, `apk del`, `opkg remove` are refused even with changes on.
+- **Settings.** Base URL, API key (stored 0600), model, max steps and the
+  file-write flag. Defaults are `https://api.openai.com/v1`, `gpt-4.1-mini`,
+  empty key, 1000 steps. Point Base URL at Ollama or any compatible gateway
+  for a local model.
+
+### ByteHelper footer fix (1.2.0)
 
 LuCI renders its own **Save / Save & Apply / Reset** footer on the ByteHelper
 pages in 1.2.0. Run this once as root after flashing, then hard-refresh:
@@ -250,6 +270,11 @@ that is the failure the build now refuses to ship.
 - **Working RJ11 phone.** `awvoice-phoned` drives the line chip directly; QModem
   is pinned to a different AT port. Dial tone, caller ID, DTMF, hold, call
   waiting, 3-way, quiet hours, call log, recording, answering machine.
+- **ByteHelper.** Top-level LuCI assistant between Services and Network. Chat
+  with any OpenAI-compatible model; the model gets a fixed router tool set
+  (UCI, ubus, services, packages, logs, files, diagnostics). Mutating actions
+  are confirmed, and flashing, reboot, disk and credential commands are
+  refused. Settings ship sanitized: `api.openai.com`, `gpt-4.1-mini`, empty key.
 - **Plug-and-play multi-WAN.** mwan3 and its LuCI page ship in the image. A
   watcher scans netifd: one uplink means mwan3 stays off; a second WAN that
   comes up with IPv4 gets an interface/member/policy automatically, is added
