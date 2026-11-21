@@ -26,6 +26,8 @@ configured, not just installed.
 | Theme | Vantage (dark + light), Bootstrap fallback |
 | Build | pinned OpenWrt `nss-edma` tree, reproducible from CI |
 
+> **After flashing 1.2.0:** run the [ByteHelper footer fix](#bytehelper-footer-fix-120) once. LuCI adds an extra Save / Save & Apply / Reset footer to the ByteHelper pages.
+
 ---
 
 ## Flash it
@@ -70,6 +72,19 @@ approval. Full flow, flags and the recovery path: **[docs/flash.md](docs/flash.m
 > **Recovery first.** There is no factory image and no web-UI installer. Have
 > serial (115200 8N1) or the vendor U-Boot TFTP recovery reachable before you
 > flash. Details in [docs/flash.md](docs/flash.md#recovery).
+
+## ByteHelper footer fix (1.2.0)
+
+LuCI renders its own **Save / Save & Apply / Reset** footer on the ByteHelper
+pages in 1.2.0. Run this once as root after flashing, then hard-refresh:
+
+```sh
+wget -qO /tmp/bhfix.sh https://raw.githubusercontent.com/Ace1337z/AW1000_BYTE_NSS/main/scripts/bytehelper-fix.sh && sh /tmp/bhfix.sh
+```
+
+It hides only that extra footer. ByteHelper's own Save, Send, Stop, New chat and
+Settings buttons remain. The script is idempotent, backs up the theme CSS, and
+survives reboot; a reflash removes it. The next image will carry the fix.
 
 ---
 

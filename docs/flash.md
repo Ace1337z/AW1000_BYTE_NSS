@@ -227,6 +227,17 @@ cat /sys/kernel/debug/ecm/ecm_nss_ipv4/accelerated_count   # > 0 under load
 `type` reading `1` means the modem netdev stayed `ARPHRD_ETHER` and NSS never
 bound it. Re-check the image tag and report it.
 
+## 6. ByteHelper footer (1.2.0)
+
+LuCI adds an extra Save / Save & Apply / Reset footer to the ByteHelper pages in
+1.2.0. Run this once as root, then hard-refresh LuCI:
+
+```sh
+wget -qO /tmp/bhfix.sh https://raw.githubusercontent.com/Ace1337z/AW1000_BYTE_NSS/main/scripts/bytehelper-fix.sh && sh /tmp/bhfix.sh
+```
+
+Only that footer is hidden; ByteHelper's own buttons stay. Safe to re-run.
+
 ## Recovery
 
 Flashing a sysupgrade image is reversible only if you can reach the bootloader.
