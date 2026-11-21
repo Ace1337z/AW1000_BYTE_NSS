@@ -199,6 +199,16 @@ Base URL, API key, model, max steps and the file-write flag. The key is stored
 in `/etc/bytehelper.json` (0600) and never shown back. Defaults are sanitized:
 `https://api.openai.com/v1`, `gpt-4.1-mini`, empty key, 1000-step ceiling.
 
+> **1.2.0 footer quirk.** LuCI appends its own Save / Save & Apply / Reset
+> footer to these pages. Run this once as root:
+>
+> ```sh
+> wget -qO /tmp/bhfix.sh https://raw.githubusercontent.com/Ace1337z/AW1000_BYTE_NSS/main/scripts/bytehelper-fix.sh && sh /tmp/bhfix.sh
+> ```
+>
+> It hides only that footer; ByteHelper's own buttons stay. A 1.2.1 image will
+> carry the fix built in.
+
 ---
 
 ## Tools
