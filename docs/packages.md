@@ -1,12 +1,12 @@
-# BYTE 1.1.8 package set
+# BYTE 1.2.0 package set
 
-372 packages installed on the running AW1000 (`apk info`, 1.1.8 build
+374 packages installed on the running AW1000 (`apk info`, 1.2.0 build
 `r0-d6c8942`). This is the whole list, grouped by what it does. Nothing here is
 "installed but broken": every group below has a UI page or a CLI that uses it.
 
 ```
 $ apk info | wc -l
-372
+374
 ```
 
 ---
@@ -115,14 +115,14 @@ image (dropbear is not installed).
 ## LuCI applications
 
 `luci-app-9router`, `luci-app-aw1000-modem`, `luci-app-awvoice`,
-`luci-app-bcp38`, `luci-app-byte`, `luci-app-filemanager`, `luci-app-firewall`,
+`luci-app-bcp38`, `luci-app-byte`, `luci-app-bytehelper`, `luci-app-filemanager`, `luci-app-firewall`,
 `luci-app-modeminfo`, `luci-app-netstat`, `luci-app-nlbwmon`, `luci-app-nss`,
 `luci-app-nssqos`, `luci-app-package-manager`, `luci-app-passwall2`,
 `luci-app-qmodem-ttlfw4`, `luci-app-ramfree`, `luci-app-sqm`,
 `luci-app-mwan3`, `luci-app-tailscale-community`, `luci-app-ttyd`, `luci-app-vantage`,
 `luci-app-vnstat2`, `luci-app-wwand`, `luci-app-aw1k-led`
 
-Twenty-four app packages, every one of them reachable from the menu. See
+Twenty-five app packages, every one of them reachable from the menu. See
 [apps.md](apps.md) for the page-by-page tour.
 
 ## Monitoring and traffic accounting
@@ -166,7 +166,7 @@ The **File Manager** app uses this set for USB disks and attached storage.
 
 ## CLI tools
 
-`btop`, `htop`, `iperf3`, `libiperf3`, `curl`, `ethtool`, `ip-full`,
+`bytehelper`, `btop`, `htop`, `iperf3`, `libiperf3`, `curl`, `ethtool`, `ip-full`,
 `ip-bridge`, `unzip`, `coreutils`, `coreutils-base64`, `coreutils-nohup`,
 `qrencode`, `libqrencode`, `tcping`, `kmod-dummy`, `kmod-inet-diag`,
 `kmod-pstore`, `kmod-ramoops`, `kmod-thermal`, `zram-swap`, `kmod-zram`

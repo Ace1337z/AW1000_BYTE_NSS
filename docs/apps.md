@@ -1,4 +1,4 @@
-# BYTE 1.1.8 — page by page
+# BYTE 1.2.0 — page by page
 
 Every menu entry that BYTE adds or changes, in the order you hit it. The stock
 LuCI pages (firewall, DHCP, system, package manager) are untouched unless noted.
@@ -17,7 +17,7 @@ SSID count, station list with signal, storage, and the network path from
 `wwand0` to this access point.
 
 The **System** panel is branded: hostname, model, kernel, local time, uptime and
-`BYTE v1.1.8`. Architecture, target platform and load average were removed on
+`BYTE v1.2.0`. Architecture, target platform and load average were removed on
 purpose. It is rewritten by a first-boot `uci-defaults` script, so a sysupgrade
 never brings the stock panel back.
 
@@ -173,6 +173,31 @@ Obfuscated WireGuard. Installed and pre-configured with one disabled client
 interface and a placeholder peer: nothing starts at boot, no route is added, and
 the module is not loaded until you enable it. Tunnel status, peer list and
 obfuscation parameters live here.
+
+---
+
+## ByteHelper
+Top-level menu item, order 45, between Services and Network.
+
+### ByteHelper → Chat
+Chat with any OpenAI-compatible model. The model is given router tools:
+`run_command`, `read_file`, `write_file` (only `/etc/config`,
+`/etc/bytehelper` and `/tmp`, with a timestamped backup), `uci`, `ubus`,
+`service`, `diagnose`, and `package_search/info/list/install/remove`.
+
+Every mutating action is confirmed unless **Allow changes** is on; with it off
+the model runs read-only and prints the plan. **Stop** cancels a running turn,
+**New chat** clears the conversation. Tool calls and their output are shown in
+collapsible blocks, and the conversation is kept on the router across reloads.
+
+Refused even with changes allowed: `sysupgrade`, `mtd write/erase`, `firstboot`,
+`reboot/halt/poweroff`, `mkfs/fdisk/dd` to a device, `rm -rf /`, `passwd`,
+`dropbear`, `/etc/shadow`, `apk del`, `opkg remove`.
+
+### ByteHelper → Settings
+Base URL, API key, model, max steps and the file-write flag. The key is stored
+in `/etc/bytehelper.json` (0600) and never shown back. Defaults are sanitized:
+`https://api.openai.com/v1`, `gpt-4.1-mini`, empty key, 1000-step ceiling.
 
 ---
 
