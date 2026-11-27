@@ -1,29 +1,26 @@
-# BYTE 1.2.0 package set
+# BYTE 1.3.1 package set
 
-374 packages installed on the running AW1000 (`apk info`, 1.2.0 build
-`r0-d6c8942`). This is the whole list, grouped by what it does. Nothing here is
+364 packages installed on the running AW1000 (`apk info`, 1.3.1 build
+`r0-0514ded`). This is the whole list, grouped by what it does. Nothing here is
 "installed but broken": every group below has a UI page or a CLI that uses it.
 
 ```
 $ apk info | wc -l
-374
+364
 ```
 
 ---
 
-## Platform, kernel and NSS offload
+## Platform, kernel and ppe-nss offload
+`kernel`, `kmod-nss-wifi-drv`, `nss-firmware`, `nss-firmware-ipq807x`,
+`qca-ppe-qos`, `luci-app-qca-ppe-qos`, `ppe-help`, `kmod-nft-bridge`,
+`kmod-nft-offload`, `kmod-qmi_wwan_q`, `kmod-qcom-qmi-helpers`,
+`quectel-cm`, `luci-proto-quectel`, `libudebug`
 
-`kernel`, `kmod-qca-nss-drv`, `kmod-qca-nss-drv-bridge-mgr`,
-`kmod-qca-nss-drv-igs`, `kmod-qca-nss-drv-mirror`, `kmod-qca-nss-drv-netlink`,
-`kmod-qca-nss-drv-pppoe`, `kmod-qca-nss-drv-qdisc`, `kmod-qca-nss-ecm`,
-`kmod-qca-mcs`, `kmod-qca-ppe-nss`, `kmod-qcom-qmi-helpers`, `kmod-qmi_wwan_q`,
-`kmod-rmnet`, `kmod-qrtr`, `kmod-qrtr-smd`, `nss-firmware`,
-`nss-firmware-ipq807x`, `nss-tools`, `nssinfo`, `nssqos`, `libnl-nss`,
-`wwand-datapath-rmnet_nss`, `libudebug`
-
-Kernel **6.18.55**. NSS firmware **12.5**, 1 GB memory profile. EDMA on every
-wired port, `CONFIG_NSS_DRV_PPE_VP_ENABLE=n`, `rmnet_rx` nexthop on core 1.
-
+Kernel **6.18.64**. NSS firmware **12.5**. Wired routed/NAT flows run in the
+PPE through the fw4 flowtable; the Wi-Fi data path runs on the NSS cores via
+`nss-wifi-drv`. There is no `qca-nss-drv`, no ECM and no NSS qdisc. The modem
+is `quectel-cm` over `qmi_wwan_q`, data device `wwan0_1`.
 ## Wi-Fi and board support
 
 `ath11k-firmware-ipq8074`, `ipq-wifi-arcadyan_aw1000`, `kmod-ath`,
@@ -37,18 +34,17 @@ Two radios, Wi-Fi 6, 2.4 GHz + 5 GHz. `wpad-openssl` covers WPA2-PSK and
 WPA3-SAE.
 
 ## Modem, USB and RJ11 voice
+`quectel-cm`, `luci-proto-quectel`, `kmod-qmi_wwan_q`, `kmod-qcom-qmi-helpers`,
+`kmod-usb-net`, `kmod-usb-serial`, `kmod-usb-serial-option`,
+`kmod-usb-serial-wwan`, `kmod-usb-wdm`, `kmod-usb-common`, `kmod-usb-core`,
+`kmod-usb-dwc3`, `kmod-usb-dwc3-qcom`, `kmod-usb-roles`, `kmod-usb-xhci-hcd`,
+`kmod-usb3`, `kmod-usb-storage`, `kmod-usb-storage-uas`, `kmod-scsi-core`,
+`kmod-mii`, `kmod-slhc`, `awvoice-phoned`, `kmod-awvoice-fxs`, `qmodem-sipd`,
+`sms-tool`, `sms-tool_q`, `kmod-reed-solomon`, `aw1000-defaults`
 
-`wwand`, `wwand-qmi`, `kmod-usb-net`, `kmod-usb-serial`,
-`kmod-usb-serial-option`, `kmod-usb-serial-wwan`, `kmod-usb-wdm`,
-`kmod-usb-common`, `kmod-usb-core`, `kmod-usb-dwc3`, `kmod-usb-dwc3-qcom`,
-`kmod-usb-roles`, `kmod-usb-xhci-hcd`, `kmod-usb3`, `kmod-usb-storage`,
-`kmod-usb-storage-uas`, `kmod-scsi-core`, `kmod-mii`, `kmod-slhc`,
-`awvoice-phoned`, `kmod-awvoice-fxs`, `qmodem-sipd`, `sms-tool`, `sms-tool_q`,
-`kmod-reed-solomon`
-
-`wwand` is the single AT and dial owner. QModem is pinned to `/dev/ttyUSB3`,
-awvoice owns `/dev/ttyUSB2`, so the voice and data paths never collide.
-
+`quectel-cm` is the single QMI dial owner and the data device is `wwan0_1`.
+QModem TTL is the only QModem page; its daemon/SMS/SIP packages are not
+installed. awvoice owns the voice AT path.
 ## Firewall, NAT and QoS
 
 `firewall4`, `nftables-json`, `bcp38`, `kmod-nf-conntrack`,
@@ -57,14 +53,14 @@ awvoice owns `/dev/ttyUSB2`, so the voice and data paths never collide.
 `kmod-nf-tproxy`, `kmod-nfnetlink`, `kmod-nft-core`, `kmod-nft-fib`,
 `kmod-nft-nat`, `kmod-nft-offload`, `kmod-nft-socket`, `kmod-nft-tproxy`,
 `kmod-ifb`, `kmod-sched`, `kmod-sched-core`, `kmod-sched-cake`, `kmod-tcp-bbr`,
-`tc-tiny`, `sqm-scripts`, `sqm-scripts-nss`, `nssqos`
+`tc-tiny`, `sqm-scripts`
 
-nftables only. `sqm-scripts-nss` puts shaping on the NSS cores instead of the
-CPU.
+nftables only. `sqm-scripts` is patched to use `hw_ppe.qos`; the PPE handles
+shaped classes when that queue is configured.
 
 ## Proxy, VPN and tunnelling
 
-`xray-core` (prebuilt 26.2.6), `tailscale`, `amneziawg-tools`, `kmod-amneziawg`, `kmod-udptunnel4`, `kmod-udptunnel6`,
+`xray-core` (26.6.27 source build), `tailscale`, `amneziawg-tools`, `kmod-amneziawg`, `kmod-udptunnel4`, `kmod-udptunnel6`,
 `kmod-tun`, `tcping`, `kmod-crypto-acompress`, `kmod-crypto-aead`,
 `kmod-crypto-ccm`, `kmod-crypto-cmac`, `kmod-crypto-crc32c`, `kmod-crypto-ctr`,
 `kmod-crypto-gcm`, `kmod-crypto-geniv`, `kmod-crypto-gf128`,
@@ -75,8 +71,8 @@ CPU.
 `kmod-crypto-null`, `kmod-crypto-rng`, `kmod-crypto-seqiv`, `kmod-crypto-sha3`,
 `kmod-crypto-sha512`
 
-PassWall2 with Xray is the default proxy. PassWall v1 4.66-8 is vendored and
-disabled. AmneziaWG is installed, configured and off.
+PassWall2 with Xray is the only proxy stack. AmneziaWG is installed,
+configured and off.
 
 ## DNS and IPv6
 
@@ -92,7 +88,7 @@ AdGuard Home chain.
 `luci-mod-admin-full`, `luci-mod-network`, `luci-mod-status`, `luci-mod-system`,
 `luci-lib-base`, `luci-lib-ip`, `luci-lib-jsonc`, `luci-lib-nixio`,
 `luci-lib-uqr`, `luci-lib-chartjs`, `luci-proto-ipv6`, `luci-proto-ppp`,
-`luci-proto-wwand`, `luci-proto-amneziawg`, `luci-theme-vantage`,
+`luci-proto-quectel`, `luci-proto-amneziawg`, `luci-theme-vantage`,
 `luci-theme-bootstrap`, `luci-ssl-openssl`, `uhttpd`, `uhttpd-mod-ubus`,
 `rpcd`, `rpcd-mod-file`, `rpcd-mod-iwinfo`, `rpcd-mod-luci`, `rpcd-mod-rrdns`,
 `rpcd-mod-ucode`, `liblucihttp-lua`, `liblucihttp-ucode`, `liblucihttp0`
@@ -116,13 +112,13 @@ image (dropbear is not installed).
 
 `luci-app-9router`, `luci-app-aw1000-modem`, `luci-app-awvoice`,
 `luci-app-bcp38`, `luci-app-byte`, `luci-app-bytehelper`, `luci-app-filemanager`, `luci-app-firewall`,
-`luci-app-modeminfo`, `luci-app-netstat`, `luci-app-nlbwmon`, `luci-app-nss`,
-`luci-app-nssqos`, `luci-app-package-manager`, `luci-app-passwall2`,
+`luci-app-modeminfo`, `luci-app-netstat`, `luci-app-nlbwmon`,
+`luci-app-qca-ppe-qos`, `luci-app-package-manager`, `luci-app-passwall2`,
 `luci-app-qmodem-ttlfw4`, `luci-app-ramfree`, `luci-app-sqm`,
 `luci-app-mwan3`, `luci-app-tailscale-community`, `luci-app-ttyd`, `luci-app-vantage`,
-`luci-app-vnstat2`, `luci-app-wwand`, `luci-app-aw1k-led`
+`luci-app-vnstat2`, `luci-app-cw-led`
 
-Twenty-five app packages, every one of them reachable from the menu. See
+Twenty-four app packages, every one of them reachable from the menu. See
 [apps.md](apps.md) for the page-by-page tour.
 
 ## Monitoring and traffic accounting
@@ -193,7 +189,7 @@ it is not part of the base image.
 | Wake-on-LAN | no use on this board |
 | Dynamic DNS | provider-specific, adds a daemon |
 | WireGuard | AmneziaWG supersedes it here |
-| `uqmi`, `quectel-cm`, `kmod-usb-net-qmi-wwan` | would fight `wwand` for the modem |
+| `wwand`, `uqmi`, `kmod-usb-net-qmi-wwan` | `quectel-cm` + `qmi_wwan_q` own the modem |
 | `qmodem` AT owner | same: one AT owner only |
 | Python, Perl | size; `agh-passwd` covers the one need |
 | `v2ray-geoip`, `v2ray-geosite` | install on demand for `geoip:` rules |

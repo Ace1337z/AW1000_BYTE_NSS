@@ -67,20 +67,20 @@ router has is the one it uses. It never reads, sets or resets credentials.
 A passing run looks like this:
 
 ```
-== BYTE installer v5
+== BYTE installer v7
 == device id: 33736085cce498b4eca13fb0
 == this box: Arcadyan AW1000 [arcadyan,aw1000] running OpenWrt 24.10.4
-== licence ok (permanent): this device may install BYTE-1.2.0
+== licence ok (permanent): this device may install BYTE-1.3.1
 == WARNING: config will be ERASED (-n)
-   about to flash BYTE-1.2.0 and ERASE the config. type yes to continue: yes
-== downloading BYTE-1.2.0 (~47 MB, the router stays online until the flash)
-== downloaded 47124740 bytes, verifying sha256
+   about to flash BYTE-1.3.1 and ERASE the config. type yes to continue: yes
+== downloading BYTE-1.3.1 (~48 MB, the router stays online until the flash)
+== downloaded 47902980 bytes, verifying sha256
    sha256 OK
    signature OK (ed25519 dcdb9655603fd9a0)
 == image check with this firmware's own verifier (no write)
    image check passed
-== flashing BYTE-1.2.0
-== done, the router is rebooting into BYTE-1.2.0
+== flashing BYTE-1.3.1
+== done, the router is rebooting into BYTE-1.3.1
 ```
 
 ### The script and the image are signed
@@ -151,7 +151,7 @@ Step 7 is why a refusal is reported before anything is written: the check that
 ### Flags
 
 ```sh
-sh /tmp/byte-i.sh BYTE-1.2.0   # pin a tag, config still erased
+sh /tmp/byte-i.sh BYTE-1.3.1   # pin a tag, config still erased
 sh /tmp/byte-i.sh              # the only mode: erase config (-n)
 sh /tmp/byte-i.sh --check      # dry run: board, licence, space, sha256
 sh /tmp/byte-i.sh --debug      # set -x trace for support
@@ -201,8 +201,8 @@ once more from zero and then refused.
 
 - OpenWrt with `sysupgrade` and a sha256 tool (`sha256sum`, busybox `sha256sum`
   or `openssl`), plus one fetcher: `curl`, `uclient-fetch` or `wget`. All of
-  these ship in 1.1.x, and stock OpenWrt has `wget` at minimum.
-- About 50 MB free in `/tmp` (image is 45,261,060 bytes; `/tmp` is tmpfs).
+  these ship in 1.3.x, and stock OpenWrt has `wget` at minimum.
+- About 52 MB free in `/tmp` (image is 47,902,980 bytes; `/tmp` is tmpfs).
 - Working WAN. Both the check and the download need it, so run this while the
   current firmware still has connectivity.
 
@@ -216,27 +216,19 @@ dial.
 
 ```sh
 cat /tmp/sysinfo/board_name                  # arcadyan,aw1000
-cat /etc/openwrt_release | grep -i byte      # BYTE 1.2.0
-uci -q get network.wwan.mtu                  # 1420
-ip link show wwand0 | grep -o 'mtu [0-9]*'   # mtu 1420
-cat /sys/class/net/wwand0/type               # 519 (raw-IP, NSS-bound)
-dmesg | grep 'raw-IP interface bound to rmnet_rx node'
-cat /sys/kernel/debug/ecm/ecm_nss_ipv4/accelerated_count   # > 0 under load
+cat /etc/openwrt_release | grep -i byte      # BYTE 1.3.1
+uci -q get network.wwan.proto                # quectel
+uci -q get network.wwan.pdptype              # ipv4
+ip -4 addr show wwan0_1                      # PDP address
+ip link show wwan0_1 | grep -o 'mtu [0-9]*'  # mtu 1500
+cat /sys/class/net/wwan0_1/type              # 519 (raw-IP)
+nft list ruleset | grep -A6 flowtable        # devices include wwan0_1
+ppe-help -offload                            # PPE flow counters
 ```
 
-`type` reading `1` means the modem netdev stayed `ARPHRD_ETHER` and NSS never
-bound it. Re-check the image tag and report it.
-
-## 6. ByteHelper footer (1.2.0)
-
-LuCI adds an extra Save / Save & Apply / Reset footer to the ByteHelper pages in
-1.2.0. Run this once as root, then hard-refresh LuCI:
-
-```sh
-wget -qO /tmp/bhfix.sh https://raw.githubusercontent.com/Ace1337z/AW1000_BYTE_NSS/main/scripts/bytehelper-fix.sh && sh /tmp/bhfix.sh
-```
-
-Only that footer is hidden; ByteHelper's own buttons stay. Safe to re-run.
+Modem traffic stays on the CPU by design; Wi-Fi and wired flows are offloaded.
+The 1.3.1 image carries the ByteHelper footer fix; the `bytehelper-fix.sh`
+script is only for 1.2.0 and exits without changes on 1.3.x.
 
 ## Recovery
 
@@ -279,7 +271,7 @@ the serial + TFTP recovery on the running firmware first.
 | sha256 mismatch | image never flashed. Re-run; if it repeats, report the tag |
 | `the image is not signed by dcdb9655603fd9a0` | the bytes did not come from the release key. Nothing was written. Report the tag to [@bytewrt](https://t.me/bytewrt); do not retry with `-F` |
 | LuCI answers but pages look old | hard-refresh with **Ctrl+Shift+R** (LuCI caches panel JS) |
-| no internet after boot | `ifstatus wan`, `ubus call network.interface.wan status`; interface is `wwand0` |
+| no internet after boot | `ifstatus wan`, `ubus call network.interface.wan status`; interface is `wwan`, data device `wwan0_1` |
 
 Never use `-F`, and never flash a foreign config over BYTE to "fix" a bad flash.
 The serial console is the recovery path.

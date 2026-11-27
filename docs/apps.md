@@ -1,4 +1,4 @@
-# BYTE 1.2.0 — page by page
+# BYTE 1.3.1 — page by page
 
 Every menu entry that BYTE adds or changes, in the order you hit it. The stock
 LuCI pages (firewall, DHCP, system, package manager) are untouched unless noted.
@@ -14,10 +14,10 @@ redirect, no certificate warning, ever.
 
 Vantage landing dashboard: uplink and downlink rate, CPU, memory, radio state,
 SSID count, station list with signal, storage, and the network path from
-`wwand0` to this access point.
+`wwan0_1` to this access point.
 
 The **System** panel is branded: hostname, model, kernel, local time, uptime and
-`BYTE v1.2.0`. Architecture, target platform and load average were removed on
+`BYTE v1.3.1`. Architecture, target platform and load average were removed on
 purpose. It is rewritten by a first-boot `uci-defaults` script, so a sysupgrade
 never brings the stock panel back.
 
@@ -30,11 +30,11 @@ not scaled by 1024. vnStat 1.x still uses the KiB fallback.
 `sync` + `drop_caches` on demand, for when the page cache has eaten the box after
 a big download or a 9Router install.
 
-### Status → NSS Offload
+### Offload status
 
-Offload counters: ECM accelerated flows, NSS core load, per-core queue
-statistics. This is how you confirm traffic is actually being forwarded by the
-NSS and not by the CPU.
+There is no ECM page on ppe-nss. The dashboard shows the NSS core load; for
+counters use `ppe-help -offload` over SSH. Wired flows run in the PPE, Wi-Fi
+flows on the NSS cores.
 
 ---
 
@@ -70,7 +70,7 @@ Lock to a cell / PCI / ARFCN, and release the lock.
 
 ### Modem → AT commands
 
-A raw AT console. QModem is pinned to `/dev/ttyUSB3`; `wwand` owns the data
+A raw AT console. QModem is pinned to `/dev/ttyUSB3`; `quectel-cm` owns the data
 path — do not point another daemon at the same port.
 
 ### Modem → TTL
@@ -90,9 +90,9 @@ it on the LAN.
 
 ### Network → Interfaces
 
-`wan` (the logical interface on `wwand0`, MTU **1420**), `lan` (`br-lan`,
-`192.168.1.1/24`), `awg0` (AmneziaWG, present but down), and any additional
-interfaces you add.
+`wwan` (`quectel-cm`, data device `wwan0_1`, MTU **1500**), `lan`
+(`br-lan`, `192.168.1.1/24`), `awg0` (AmneziaWG, present but down), and any
+additional interfaces you add.
 
 ### Network → Wireless
 
@@ -199,15 +199,8 @@ Base URL, API key, model, max steps and the file-write flag. The key is stored
 in `/etc/bytehelper.json` (0600) and never shown back. Defaults are sanitized:
 `https://api.openai.com/v1`, `gpt-4.1-mini`, empty key, 1000-step ceiling.
 
-> **1.2.0 footer quirk.** LuCI appends its own Save / Save & Apply / Reset
-> footer to these pages. Run this once as root:
->
-> ```sh
-> wget -qO /tmp/bhfix.sh https://raw.githubusercontent.com/Ace1337z/AW1000_BYTE_NSS/main/scripts/bytehelper-fix.sh && sh /tmp/bhfix.sh
-> ```
->
-> It hides only that footer; ByteHelper's own buttons stay. A 1.2.1 image will
-> carry the fix built in.
+> **Footer:** fixed in 1.3.1 (`luci-app-bytehelper` r3). The old
+> `bytehelper-fix.sh` is only for 1.2.0.
 
 ---
 
@@ -263,7 +256,7 @@ routes the prefix, flip this switch.
 
 ### Tools → VnStats
 
-vnStat 2.13 traffic graphs. Pick the interface (`br-lan`, `wwan0`, `wwand0`) and
+vnStat 2.13 traffic graphs. Pick the interface (`br-lan`, `wwan0`, `wwan0_1`) and
 the view (daily or monthly); the charts render inline, so no external image.
 
 ### Tools → 9Router

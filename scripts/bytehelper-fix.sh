@@ -1,10 +1,19 @@
 #!/bin/sh
-# ByteHelper 1.2.0: hide LuCI's Save / Save & Apply / Reset footer on the
-# ByteHelper pages. Safe to re-run. Run as root on the router.
+# ByteHelper footer fix, kept for BYTE 1.2.0 only.
+# 1.3.1 ships luci-app-bytehelper r3, which removes the extra LuCI footer in
+# the views themselves. This script exits without touching anything on 1.3.x.
+# Run as root on the router.
 #
 #   wget -qO /tmp/bhfix.sh https://raw.githubusercontent.com/Ace1337z/AW1000_BYTE_NSS/main/scripts/bytehelper-fix.sh && sh /tmp/bhfix.sh
 #
 set -eu
+REL="$(sed -n "s/^DISTRIB_RELEASE='\(.*\)'$/\1/p" /etc/openwrt_release 2>/dev/null | head -1)"
+case "$REL" in
+	1.3.*)
+		echo "BYTE ${REL:-1.3.x} already carries the ByteHelper footer fix; nothing to do."
+		exit 0
+		;;
+esac
 
 RULE='#view > .bytehelper-page ~ .cbi-page-actions { display: none !important; }'
 MEDIA="$(uci -q get luci.main.mediaurlbase || true)"

@@ -1,32 +1,30 @@
 # BYTE for Arcadyan AW1000
 
-![BYTE 1.2.0](https://img.shields.io/badge/BYTE-1.2.0-4cc2ff?style=flat-square)
+![BYTE 1.3.1](https://img.shields.io/badge/BYTE-1.3.1-4cc2ff?style=flat-square)
 ![target](https://img.shields.io/badge/target-ipq807x%20%C2%B7%20aw1000-1f6feb?style=flat-square)
-![kernel](https://img.shields.io/badge/kernel-6.18.55-2ea043?style=flat-square)
-![packages](https://img.shields.io/badge/packages-374-a371f7?style=flat-square)
+![kernel](https://img.shields.io/badge/kernel-6.18.64-2ea043?style=flat-square)
+![packages](https://img.shields.io/badge/packages-364-a371f7?style=flat-square)
 ![image](https://img.shields.io/badge/image-sysupgrade%20only-d29922?style=flat-square)
 
 **OpenWrt 6.18 with Qualcomm NSS hardware offload, rebuilt around the AW1000 5G CPE.**
 One sysupgrade image, a dark-first LuCI, a working RJ11 phone, PassWall2, AdGuard
-Home wiring, 9Router, ByteHelper, modem telemetry — and 374 packages that are actually
+Home wiring, 9Router, ByteHelper, modem telemetry — and 364 packages that are actually
 configured, not just installed.
 
-![BYTE 1.2.0 on the Arcadyan AW1000](docs/hardware.svg)
+![BYTE 1.3.1 on the Arcadyan AW1000](docs/hardware.svg)
 
 | | |
 | --- | --- |
-| Release | **BYTE 1.2.0** (`r0-d6c8942`) |
+| Release | **BYTE 1.3.1** (`r0-0514ded`) |
 | Target | `qualcommax` / `ipq807x` · profile `arcadyan_aw1000` |
 | SoC | Qualcomm IPQ8072A, 4 × Cortex-A53, 1 GB RAM |
-| Kernel | Linux **6.18.55** |
-| NSS | firmware **12.5**, 1 GB memory profile, `qca-nss-drv` + ECM |
+| Kernel | Linux **6.18.64** |
+| NSS | firmware **12.5**, Wi-Fi offload via `nss-wifi-drv`, wired offload in the PPE; no ECM |
 | Wi-Fi | ath11k, Wi-Fi 6, 2.4 GHz + 5 GHz (160 MHz capable) |
-| Image | squashfs **sysupgrade only** — **47.1 MB** (44.9 MiB), one file |
-| Packages | **374** installed |
+| Image | squashfs **sysupgrade only** — **47.9 MB** (45.7 MiB), one file |
+| Packages | **364** installed |
 | Theme | Vantage (dark + light), Bootstrap fallback |
-| Build | pinned OpenWrt `nss-edma` tree, reproducible from CI |
-
-> **After flashing 1.2.0:** run the [ByteHelper footer fix](#bytehelper-footer-fix-120) once. LuCI adds an extra Save / Save & Apply / Reset footer to the ByteHelper pages.
+| Build | pinned OpenWrt `ppe-nss` tree, reproducible from CI |
 
 ---
 
@@ -93,19 +91,6 @@ set. No Node runtime, no account: one static 5.7 MB binary plus two LuCI pages.
   empty key, 1000 steps. Point Base URL at Ollama or any compatible gateway
   for a local model.
 
-### ByteHelper footer fix (1.2.0)
-
-LuCI renders its own **Save / Save & Apply / Reset** footer on the ByteHelper
-pages in 1.2.0. Run this once as root after flashing, then hard-refresh:
-
-```sh
-wget -qO /tmp/bhfix.sh https://raw.githubusercontent.com/Ace1337z/AW1000_BYTE_NSS/main/scripts/bytehelper-fix.sh && sh /tmp/bhfix.sh
-```
-
-It hides only that extra footer. ByteHelper's own Save, Send, Stop, New chat and
-Settings buttons remain. The script is idempotent, backs up the theme CSS, and
-survives reboot; a reflash removes it. The next image will carry the fix.
-
 ---
 
 ## What it looks like
@@ -165,7 +150,7 @@ Local LLM gateway: install, service state, node list and request graphs.
 ### Tools → VnStats
 
 vnStat 2.13 usage graphs — daily, monthly, per interface selectable from the
-page (`br-lan`, `wwan0`, `wwand0`).
+page (`br-lan`, `wwan0`, `wwan0_1`).
 
 ![vnStat graphs](docs/screenshots/vnstat.png)
 
@@ -232,39 +217,31 @@ transport UDP, and the password from the SIP tab.
 ---
 
 ## Where the packets go
-
-![NSS datapath](docs/stack.svg)
-
-Established flows are forwarded on the NSS cores, not by the CPU. The modem's
-raw-IP netdevs are bound to the firmware `rmnet_rx` nexthop by `qca-nss-drv`, so
-the CPU stays free for LuCI, PassWall2, AdGuard Home and the phone daemon.
-
-Three checks that offload is really engaged after a flash:
-
+![offload datapath](docs/stack.svg)
+Wired routed/NAT flows run in the **PPE** through the fw4 flowtable; the Wi-Fi
+data path runs on the **NSS** cores through `nss-wifi-drv`. There is no ECM and
+no vendor NSS host driver. The modem is `quectel-cm` over `qmi_wwan_q`, data
+device `wwan0_1`.
+Checks after a flash:
 ```sh
-cat /sys/class/net/wwand0/type                                    # 519 = ARPHRD_RAWIP
-dmesg | grep -m1 "raw-IP interface bound to rmnet_rx node"
-cat /sys/kernel/debug/ecm/ecm_nss_ipv4/accelerated_count          # > 0 while forwarding
+ip -4 addr show wwan0_1
+nft list ruleset | grep -A6 flowtable     # devices include wwan0_1, flags offload
+ppe-help -offload                          # PPE flow counters
 ```
-
-`type` reading `1` means the ETHER path won and the binder had nothing to bind —
-that is the failure the build now refuses to ship.
-
+Modem traffic stays on the CPU by design; Wi-Fi and wired flows are offloaded.
 ---
 
 ## Highlights
 
-- **One image, deliberate size.** **47.1 MB** (44.9 MiB) of squashfs sysupgrade.
+- **One image, deliberate size.** **47.9 MB** (45.7 MiB) of squashfs sysupgrade.
   Tailscale returned in 1.1.5 (+≈7 MB); Wake-on-LAN, Dynamic DNS and WireGuard
   stay out. Fits in `/tmp` for the upgrade, and 1 GB RAM plus four A53 cores
   stay idle: no swap pressure, ~600 MB of overlay free. Speed comes from the
   NSS cores, not from adding packages.
-- **NSS offload that is actually wired.** EDMA on every wired port, ECM
-  acceleration, `rmnet_rx` on NSS core 1, DTS marks `&nss1` okay. PPE is off on
-  purpose.
-- **One AT owner.** `wwand` + `luci-proto-wwand` dial the QMI modem and carry
-  the `rmnet_nss` datapath. `uqmi`, `quectel-cm` and `kmod-usb-net-qmi-wwan` are
-  not in the image, so nothing fights over the modem.
+- **PPE + NSS offload.** Wired routed/NAT flows run in the PPE flowtable;
+  the Wi-Fi data path runs on the NSS cores via `nss-wifi-drv`. No ECM.
+- **One modem owner.** `quectel-cm` + `qmi_wwan_q` dial the QMI modem on
+  `wwan0_1`; `wwand`, `uqmi` and `kmod-usb-net-qmi-wwan` are not in the image.
 - **Plain HTTP WebUI.** No 443 listener, no redirect, no certificate warning —
   fresh client, after upgrade, on every port.
 - **Working RJ11 phone.** `awvoice-phoned` drives the line chip directly; QModem
@@ -288,8 +265,7 @@ that is the failure the build now refuses to ship.
   NAT. Config is validated before it goes live and rolls back if `:53` stops
   answering; a 60 s guard calls the installer's watchdog.
 - **PassWall2 only.** PassWall v1 and its helper stack are gone. xray-core is
-  the prebuilt **26.2.6** aarch64 binary, pinned by sha256, checked against
-  PassWall2 26.4.10 (the live node config passes `xray run -test`).
+  the source build **26.6.27**, checked against PassWall2 26.4.10 (the live node config passes `xray run -test`).
 - **The installer cannot lie about a flash.** The image lives outside every
   scratch directory, a read-only UBI pre-flight walks the chain
   `nand_do_upgrade` will write, and a marker in `/etc` proves afterwards
@@ -303,22 +279,21 @@ that is the failure the build now refuses to ship.
   needed — 20 KB static helper.
 - **IPv6 one switch.** Flips modem PDP type, LAN RA/DHCPv6 and dnsmasq AAAA
   filtering as a unit, and redials the modem.
-- **MTU 1420 pinned.** `use_pushed_mtu=0` so a re-dial or the IPv6 toggle cannot
-  change it. LAN/Wi-Fi stay at 1500, MSS clamped on forward.
+- **MTU 1500 on the modem.** quectel-cm applies the carrier MTU; LAN/Wi-Fi stay
+  at 1500, MSS clamped on forward.
 - **Phone, then trim.** Wake-on-LAN, Dynamic DNS and WireGuard are out;
   Tailscale is back in 1.1.5 under Services. `kmod-tun`, `kmod-inet-diag` and
   `kmod-dummy` stay so CLI tools work.
 - **Terminal and LEDs where they belong.** `ttyd` sits under Modem → Terminal,
-  Tailscale under Services, and the AW1000 LED controller ships disabled
-  because `aw1000-leds` already drives the same channels.
+  Tailscale under Services, and `luci-app-cw-led` ships disabled because `aw1000-leds`
+  already drives the same channels and feeds the dashboard cache.
 - **Modem → Messages reads the real storage.** Storages come from `AT+CPMS`
   (ME, SM and `MT`), and `AT+CSMS`/`AT+CNMI` are re-armed at boot and after
   every modem reset.
-- **PassWall2 (Xray) + PassWall v1 4.66-8.** Both installed, both able to run;
-  only one at a time, by design.
+- **PassWall2 with Xray 26.6.27.** One proxy stack, one DNS owner.
 
 Details and the reasoning behind each 1.1.x change: **[docs/apps.md](docs/apps.md)**.
-All 374 packages: **[docs/packages.md](docs/packages.md)**.
+All 364 packages: **[docs/packages.md](docs/packages.md)**.
 
 ---
 
@@ -333,7 +308,7 @@ All 374 packages: **[docs/packages.md](docs/packages.md)**.
 | Hostname | `BYTE` |
 | Timezone | `Asia/Kuala_Lumpur` (UTC+8) |
 | Wi-Fi | `BYTE`, 2.4 + 5 GHz, country `US`, ch 1 / ch 149 |
-| Uplink | `wwand0` behind logical `wan`, MTU 1420 |
+| Uplink | `wwan0_1` behind logical `wwan`, MTU 1500 |
 | IPv6 | off (carrier prefix unrouted) — **Tools → IPv6** flips it |
 
 > **Security warning.** Out of the box Wi-Fi is open and `root` has an empty
@@ -349,7 +324,7 @@ All 374 packages: **[docs/packages.md](docs/packages.md)**.
 | --- | --- |
 | [docs/flash.md](docs/flash.md) | install, flags, licence, recovery |
 | [docs/apps.md](docs/apps.md) | every LuCI page and what it does |
-| [docs/packages.md](docs/packages.md) | all 374 packages, grouped |
+| [docs/packages.md](docs/packages.md) | all 364 packages, grouped |
 
 ## Scope
 
