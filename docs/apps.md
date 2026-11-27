@@ -269,13 +269,18 @@ graphs. Not part of the base image — reinstall after an upgrade; data in
 
 ## System
 
-### System → AW1000 LEDs
-The NoobWRT LED controller (`luci-app-aw1k-led`): 5G signal and modem-state
-colours, thresholds and night mode. Shipped **disabled**, because
-`aw1000-leds` already drives the same red/green/blue signal/5G channels — two
-writers leave the LED in whichever state ran last. Enable it only if you want
-this page to own them:
-`uci set ledstatus.settings.enabled='1'; /etc/init.d/ledstatus enable`.
+### System → LED Management
+`luci-app-cw-led` 1.0.0: front-panel LED state, thresholds and an optional
+night window. It is installed but **disabled** because `aw1000-leds` already
+drives the same signal/5G/internet channels and fills the dashboard cache.
+To hand the LEDs to cw-led instead:
+```sh
+uci set cw-led.global.enabled='1'; uci commit cw-led
+/etc/init.d/cw-led enable; /etc/init.d/cw-led restart
+/etc/init.d/aw1000-leds stop; /etc/init.d/aw1000-leds disable
+```
+`aw1000-leds` then no longer fills `/tmp/aw1000-status`, so the modem/dashboard
+cache cards lose their history until you switch back.
 ### System → File Manager
 
 Browse, upload, download, edit and delete files on the overlay and on USB
