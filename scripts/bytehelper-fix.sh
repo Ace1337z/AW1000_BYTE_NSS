@@ -1,6 +1,6 @@
 #!/bin/sh
 # ByteHelper footer fix, kept for BYTE 1.2.0 only.
-# 1.3.1 ships luci-app-bytehelper r3, which removes the extra LuCI footer in
+# 1.3.x ships luci-app-bytehelper r3, which removes the extra LuCI footer in
 # the views themselves. This script exits without touching anything on 1.3.x.
 # Run as root on the router.
 #

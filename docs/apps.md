@@ -1,4 +1,4 @@
-# BYTE 1.3.1 — page by page
+# BYTE 1.3.2 — page by page
 
 Every menu entry that BYTE adds or changes, in the order you hit it. The stock
 LuCI pages (firewall, DHCP, system, package manager) are untouched unless noted.
@@ -17,7 +17,7 @@ SSID count, station list with signal, storage, and the network path from
 `wwan0_1` to this access point.
 
 The **System** panel is branded: hostname, model, kernel, local time, uptime and
-`BYTE v1.3.1`. Architecture, target platform and load average were removed on
+`BYTE v1.3.2`. Architecture, target platform and load average were removed on
 purpose. It is rewritten by a first-boot `uci-defaults` script, so a sysupgrade
 never brings the stock panel back.
 
@@ -118,14 +118,15 @@ traffic still is. Per-source bypass rules give the NSS more to do.
 the tailnet address and the exit-node controls. Nothing connects until you run
 `tailscale up`; `kmod-tun` is already in the image.
 
-### Network → MultiWAN
+### Network → Multi-WAN
 
-mwan3 with its LuCI page. It ships inert and is driven by
-`/usr/sbin/mwan3-autoconfig`: with one uplink the service stays off; when a
-second WAN-like interface is up with IPv4 the watcher creates interface,
-member, policy and a LAN-only rule, adds the uplink to the firewall WAN zone,
-and starts mwan3. Unplug it and balancing stops again. If no member comes
-online it rolls back to single WAN instead of marking traffic with no route.
+`aw1000-multiwan` with its LuCI page. `multiwand` pings each configured uplink
+from that interface, marks it online/offline, and installs one managed default
+route. `Failover` uses the lowest-metric online WAN. `Weighted load balancing`
+installs a weighted multipath default (`fib_multipath_hash_policy=1`) and
+spreads new flows across the online WANs. It does not use packet marks, so it
+coexists with PassWall2. The page shows device, address, latency, active state
+and weight; mwan3 is not installed.
 
 ### Services → Bandwidth Monitor
 
@@ -199,7 +200,7 @@ Base URL, API key, model, max steps and the file-write flag. The key is stored
 in `/etc/bytehelper.json` (0600) and never shown back. Defaults are sanitized:
 `https://api.openai.com/v1`, `gpt-4.1-mini`, empty key, 1000-step ceiling.
 
-> **Footer:** fixed in 1.3.1 (`luci-app-bytehelper` r3). The old
+> **Footer:** fixed in 1.3.2 (`luci-app-bytehelper` r3). The old
 > `bytehelper-fix.sh` is only for 1.2.0.
 
 ---

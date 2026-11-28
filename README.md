@@ -1,28 +1,28 @@
 # BYTE for Arcadyan AW1000
 
-![BYTE 1.3.1](https://img.shields.io/badge/BYTE-1.3.1-4cc2ff?style=flat-square)
+![BYTE 1.3.2](https://img.shields.io/badge/BYTE-1.3.2-4cc2ff?style=flat-square)
 ![target](https://img.shields.io/badge/target-ipq807x%20%C2%B7%20aw1000-1f6feb?style=flat-square)
 ![kernel](https://img.shields.io/badge/kernel-6.18.64-2ea043?style=flat-square)
-![packages](https://img.shields.io/badge/packages-364-a371f7?style=flat-square)
+![packages](https://img.shields.io/badge/packages-352-a371f7?style=flat-square)
 ![image](https://img.shields.io/badge/image-sysupgrade%20only-d29922?style=flat-square)
 
 **OpenWrt 6.18 with Qualcomm NSS hardware offload, rebuilt around the AW1000 5G CPE.**
 One sysupgrade image, a dark-first LuCI, a working RJ11 phone, PassWall2, AdGuard
-Home wiring, 9Router, ByteHelper, modem telemetry — and 364 packages that are actually
+Home wiring, 9Router, ByteHelper, modem telemetry — and 352 packages that are actually
 configured, not just installed.
 
-![BYTE 1.3.1 on the Arcadyan AW1000](docs/hardware.svg)
+![BYTE 1.3.2 on the Arcadyan AW1000](docs/hardware.svg)
 
 | | |
 | --- | --- |
-| Release | **BYTE 1.3.1** (`r0-0514ded`) |
+| Release | **BYTE 1.3.2** (`r0-0514ded`) |
 | Target | `qualcommax` / `ipq807x` · profile `arcadyan_aw1000` |
 | SoC | Qualcomm IPQ8072A, 4 × Cortex-A53, 1 GB RAM |
 | Kernel | Linux **6.18.64** |
 | NSS | firmware **12.5**, Wi-Fi offload via `nss-wifi-drv`, wired offload in the PPE; no ECM |
 | Wi-Fi | ath11k, Wi-Fi 6, 2.4 GHz + 5 GHz (160 MHz capable) |
-| Image | squashfs **sysupgrade only** — **47.9 MB** (45.7 MiB), one file |
-| Packages | **364** installed |
+| Image | squashfs **sysupgrade only** — **47.7 MB** (45.5 MiB), one file |
+| Packages | **352** installed |
 | Theme | Vantage (dark + light), Bootstrap fallback |
 | Build | pinned OpenWrt `ppe-nss` tree, reproducible from CI |
 
@@ -233,7 +233,7 @@ Modem traffic stays on the CPU by design; Wi-Fi and wired flows are offloaded.
 
 ## Highlights
 
-- **One image, deliberate size.** **47.9 MB** (45.7 MiB) of squashfs sysupgrade.
+- **One image, deliberate size.** **47.7 MB** (45.5 MiB) of squashfs sysupgrade.
   Tailscale returned in 1.1.5 (+≈7 MB); Wake-on-LAN, Dynamic DNS and WireGuard
   stay out. Fits in `/tmp` for the upgrade, and 1 GB RAM plus four A53 cores
   stay idle: no swap pressure, ~600 MB of overlay free. Speed comes from the
@@ -252,12 +252,12 @@ Modem traffic stays on the CPU by design; Wi-Fi and wired flows are offloaded.
   (UCI, ubus, services, packages, logs, files, diagnostics). Mutating actions
   are confirmed, and flashing, reboot, disk and credential commands are
   refused. Settings ship sanitized: `api.openai.com`, `gpt-4.1-mini`, empty key.
-- **Plug-and-play multi-WAN.** mwan3 and its LuCI page ship in the image. A
-  watcher scans netifd: one uplink means mwan3 stays off; a second WAN that
-  comes up with IPv4 gets an interface/member/policy automatically, is added
-  to the firewall WAN zone, and balancing starts. Unplug it and mwan3 turns
-  itself off again. If no member comes online it rolls back instead of
-  leaving traffic with no route.
+- **Multi-WAN with weighted balancing.** `aw1000-multiwan` tracks each uplink
+  with ICMP from that interface and owns one default route. `failover` uses
+  the lowest-metric online WAN; `balance` installs a weighted multipath
+  default so new flows are spread across both links. It is transparent to
+  nftables and PassWall2, and has a Network -> Multi-WAN page with per-uplink
+  status, weights and a test SMS. mwan3 is not installed.
 - **DNS with one owner.** AdGuard Home holds `:53`; dnsmasq moves to `:5335`
   for `.lan`; external names resolve over DoH (Quad9 + Cloudflare), so a
   PassWall2 node restart cannot take resolution down. An nftables chain at
@@ -293,7 +293,7 @@ Modem traffic stays on the CPU by design; Wi-Fi and wired flows are offloaded.
 - **PassWall2 with Xray 26.6.27.** One proxy stack, one DNS owner.
 
 Details and the reasoning behind each 1.1.x change: **[docs/apps.md](docs/apps.md)**.
-All 364 packages: **[docs/packages.md](docs/packages.md)**.
+All 352 packages: **[docs/packages.md](docs/packages.md)**.
 
 ---
 
@@ -324,7 +324,7 @@ All 364 packages: **[docs/packages.md](docs/packages.md)**.
 | --- | --- |
 | [docs/flash.md](docs/flash.md) | install, flags, licence, recovery |
 | [docs/apps.md](docs/apps.md) | every LuCI page and what it does |
-| [docs/packages.md](docs/packages.md) | all 364 packages, grouped |
+| [docs/packages.md](docs/packages.md) | all 352 packages, grouped |
 
 ## Scope
 

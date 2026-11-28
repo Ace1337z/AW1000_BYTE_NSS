@@ -1,12 +1,12 @@
-# BYTE 1.3.1 package set
+# BYTE 1.3.2 package set
 
-364 packages installed on the running AW1000 (`apk info`, 1.3.1 build
+352 packages installed on the running AW1000 (`apk info`, 1.3.2 build
 `r0-0514ded`). This is the whole list, grouped by what it does. Nothing here is
 "installed but broken": every group below has a UI page or a CLI that uses it.
 
 ```
 $ apk info | wc -l
-364
+352
 ```
 
 ---
@@ -115,7 +115,7 @@ image (dropbear is not installed).
 `luci-app-modeminfo`, `luci-app-netstat`, `luci-app-nlbwmon`,
 `luci-app-qca-ppe-qos`, `luci-app-package-manager`, `luci-app-passwall2`,
 `luci-app-qmodem-ttlfw4`, `luci-app-ramfree`, `luci-app-sqm`,
-`luci-app-mwan3`, `luci-app-tailscale-community`, `luci-app-ttyd`, `luci-app-vantage`,
+`luci-app-aw1000-multiwan`, `luci-app-tailscale-community`, `luci-app-ttyd`, `luci-app-vantage`,
 `luci-app-vnstat2`, `luci-app-cw-led`
 
 Twenty-four app packages, every one of them reachable from the menu. See

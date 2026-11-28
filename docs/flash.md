@@ -67,21 +67,27 @@ router has is the one it uses. It never reads, sets or resets credentials.
 A passing run looks like this:
 
 ```
-== BYTE installer v7
+== BYTE installer v8
 == device id: 33736085cce498b4eca13fb0
 == this box: Arcadyan AW1000 [arcadyan,aw1000] running OpenWrt 24.10.4
-== licence ok (permanent): this device may install BYTE-1.3.1
+== licence ok (permanent): this device may install BYTE-1.3.2
 == WARNING: config will be ERASED (-n)
-   about to flash BYTE-1.3.1 and ERASE the config. type yes to continue: yes
-== downloading BYTE-1.3.1 (~48 MB, the router stays online until the flash)
-== downloaded 47902980 bytes, verifying sha256
+   about to flash BYTE-1.3.2 and ERASE the config. type yes to continue: yes
+== downloading BYTE-1.3.2 (~48 MB, the router stays online until the flash)
+== downloaded 47677700 bytes, verifying sha256
    sha256 OK
    signature OK (ed25519 dcdb9655603fd9a0)
 == image check with this firmware's own verifier (no write)
    image check passed
-== flashing BYTE-1.3.1
-== done, the router is rebooting into BYTE-1.3.1
+== flashing BYTE-1.3.2
+== done, the router is rebooting into BYTE-1.3.2
 ```
+If the gate times out because the running router sends its own traffic into a
+dead PassWall2 or Multi-WAN path, installer v8 does not ask you to factory
+reset. It stops `passwall2`, then `multiwan`/`mwan3`, one at a time, and
+retries the gate over the direct WAN. The services are restarted if the install
+is aborted; after a successful hand-off the box reboots anyway. Set
+`BYTE_NO_RESCUE=1` to disable this.
 
 ### The script and the image are signed
 
@@ -151,7 +157,7 @@ Step 7 is why a refusal is reported before anything is written: the check that
 ### Flags
 
 ```sh
-sh /tmp/byte-i.sh BYTE-1.3.1   # pin a tag, config still erased
+sh /tmp/byte-i.sh BYTE-1.3.2   # pin a tag, config still erased
 sh /tmp/byte-i.sh              # the only mode: erase config (-n)
 sh /tmp/byte-i.sh --check      # dry run: board, licence, space, sha256
 sh /tmp/byte-i.sh --debug      # set -x trace for support
@@ -216,7 +222,7 @@ dial.
 
 ```sh
 cat /tmp/sysinfo/board_name                  # arcadyan,aw1000
-cat /etc/openwrt_release | grep -i byte      # BYTE 1.3.1
+cat /etc/openwrt_release | grep -i byte      # BYTE 1.3.2
 uci -q get network.wwan.proto                # quectel
 uci -q get network.wwan.pdptype              # ipv4
 ip -4 addr show wwan0_1                      # PDP address
@@ -227,7 +233,7 @@ ppe-help -offload                            # PPE flow counters
 ```
 
 Modem traffic stays on the CPU by design; Wi-Fi and wired flows are offloaded.
-The 1.3.1 image carries the ByteHelper footer fix; the `bytehelper-fix.sh`
+The 1.3.2 image carries the ByteHelper footer fix; the `bytehelper-fix.sh`
 script is only for 1.2.0 and exits without changes on 1.3.x.
 
 ## Recovery
